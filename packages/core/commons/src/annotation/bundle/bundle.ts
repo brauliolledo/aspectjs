@@ -31,11 +31,7 @@ export type AnnotationBundleRegistry<T = unknown, A extends AnnotationType = any
 /**
  * @public
  */
-export type AnnotationsBundle<T = unknown> =
-    | ClassAnnotationsBundle<T>
-    | MethodAnnotationsBundle<T>
-    | ParameterAnnotationsBundle<T>
-    | PropertyAnnotationsBundle<T>;
+export type AnnotationsBundle<T = unknown> = ClassAnnotationsBundle<T>;
 
 /**
  * @public
@@ -95,9 +91,6 @@ export interface ParameterAnnotationsBundle<T = unknown> {
  */
 export class RootAnnotationsBundle {
     constructor(protected _registry: AnnotationBundleRegistry) {}
-    at<T>(location: MethodAnnotationLocation<T>, searchParents?: boolean): MethodAnnotationsBundle<T>;
-    at<T>(location: ParametersAnnotationLocation<T>, searchParents?: boolean): ParameterAnnotationsBundle<T>;
-    at<T>(location: PropertyAnnotationLocation<T>, searchParents?: boolean): PropertyAnnotationsBundle<T>;
     at<T>(location: ClassAnnotationLocation<T>, searchParents?: boolean): ClassAnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents?: boolean): AnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents = true): AnnotationsBundle<T> {

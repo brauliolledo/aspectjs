@@ -14,7 +14,7 @@
        {
             "type": "node",
             "request": "launch",
-            "name": "UT - Memo",
+            "name": "UT - Core",
             "program": "${workspaceFolder}/node_modules/.bin/jasmine",
             "cwd": "${workspaceFolder}/packages/core",
             "args": ["--config=jasmine.json"],
@@ -23,15 +23,26 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-             "type": "node",
-             "request": "launch",
-             "name": "UT - Memo",
-             "program": "${workspaceFolder}/node_modules/.bin/jasmine",
-             "cwd": "${workspaceFolder}/packages/memo",
-             "args": ["--config=jasmine.json"],
-             "runtimeArgs": ["--nolazy"],
-             "console": "integratedTerminal",
-             "internalConsoleOptions": "neverOpen"
-         },
-    ]
+            "type": "node",
+            "request": "launch",
+            "name": "UT - Memo",
+            "program": "${workspaceFolder}/node_modules/.bin/jasmine",
+            "cwd": "${workspaceFolder}/packages/memo",
+            "args": ["--config=jasmine.json"],
+            "runtimeArgs": ["--nolazy"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "UT - Fetch",
+            "program": "${workspaceFolder}/node_modules/.bin/jasmine",
+            "cwd": "${workspaceFolder}/packages/fetch",
+            "args": ["--config=jasmine.json"],
+            "runtimeArgs": ["--nolazy"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+  ]
 }

@@ -1,1 +1,1 @@
-export * from './src/fetch';
+export * from './src/fetch.aspect';

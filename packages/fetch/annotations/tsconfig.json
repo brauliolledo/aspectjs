@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts"
+  ],
+  "exclude": [
+    "dist",
+    "rollup.config.ts",
+    "**/*.spec.ts",
+    "**/*.spec.template.ts"
+  ],
+  "references": [
+    {
+      "path": "../../core",
+    },
+    {
+      "path": "../../core/commons"
+    }
+  ]
+}

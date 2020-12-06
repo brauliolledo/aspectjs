@@ -17,7 +17,13 @@ export function _defineFunctionProperties<T, F extends (...args: any[]) => T>(
     assert(typeof fn === 'function');
 
     // const newFn = fn;
-    const newFn = new Function('fn', `return function ${name}(...args) { return fn.apply(this, args) };`)(fn);
+    let newFn = fn;
+    try {
+        // try to rename thr function.
+        newFn = new Function('fn', `return function ${name}(...args) { return fn.apply(this, args) };`)(fn);
+    } catch (e) {
+        // won't work if name is a keyword (eg: delete). Let neFn as is.
+    }
     Object.defineProperty(newFn, 'name', {
         value: name,
     });

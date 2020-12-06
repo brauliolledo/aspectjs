@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "include": [
     "src/**/*.ts",
+    "testing/**/*.ts",
     "public_api.ts",
     "**/*.spec.ts"
   ],
@@ -12,5 +13,13 @@
   "compilerOptions": {
     "rootDir": ".",
     "module": "commonjs"
-  }
+  },
+  "references": [
+    { "path": "../core" },
+    { "path": "../core/commons" },
+    { "path": "../core/annotations" },
+    { "path": "../core/testing" },
+    { "path": "../core/utils" },
+    { "path": "./annotations" },
+  ],
 }

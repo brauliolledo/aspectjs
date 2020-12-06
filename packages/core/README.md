@@ -39,11 +39,7 @@ import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 import { WEAVER_CONTEXT } from '@aspectjs/core';
 
 // Define the annotation
-const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message?: string): any {
-    // Annotation stub returns any, so typescript accepts the annotation
-    // above both classes, properties, methods & parameters
-    return;
-});
+const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message) {});
 
 // Create an aspect to enhance the @Deprecated annotation
 @Aspect()
@@ -52,7 +48,7 @@ class DeprecatedAspect {
 
     @Before(on.method.withAnnotations(Deprecated)) // before @Deprecated methods
     @Before(on.parameter.withAnnotations(Deprecated)) // before methods with @Deprecated parameters
-    @Order(1) // optional: give the execution order
+    @Order(1) // optional: give the execution precedence. Lower order = Higher precedence
     logWarning(context) {
         // context gets injected with some data relative to the current advice
         // get the unique target reference (ie: where the annotation is)
@@ -82,7 +78,7 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
 // Use the aspect
 (function main() {
     class Greetings {
-        sayHello(@Deprecarted('parameter name is deprecated') name) {
+        sayHello(@Deprecated('parameter name is deprecated') name) {
             console.log('Hello world');
         }
         @Deprecated()
@@ -91,11 +87,15 @@ WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
         }
     }
 
-    const g = new Greetings();
-    g.sayHello('WORLD'); // will raise one warning
-    g.sayGoodbye(); // will raise one warning
+    g.sayHello('WORLD'); // will log "parameter name is deprecated" once on console
+    g.sayGoodbye();
+
+    g.sayHello('WORLD'); // will log "method "Greetings.sayGoodbye" is deprecated" once on console
+    g.sayGoodbye();
 })();
 ```
+
+[run on StackBlitz](https://stackblitz.com/edit/typescript-gdvy3k?devtoolsheight=33&file=index.ts)
 
 ## Projects of the AspectJS family:
 
