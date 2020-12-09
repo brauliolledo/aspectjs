@@ -14,7 +14,7 @@ export interface Labeled {
 }
 
 /**
- * Setup a brand new WEAVER_CONTEXT for test purposes
+ * Setup a brand new WeaverContext for test purposes
  * @public
  */
 export function setupTestingWeaverContext(...aspects: AspectType[]): WeaverContext {

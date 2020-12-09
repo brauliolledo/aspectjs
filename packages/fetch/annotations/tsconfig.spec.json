@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "../testing/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../core",
+    },
+    {
+      "path": "../../core/commons"
+    }
+  ]
+}

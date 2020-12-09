@@ -7,11 +7,14 @@ import { AspectType } from '../aspect';
  * @public
  */
 export class WeaverProfile {
-    protected _aspectsRegistry: {
+    private _aspectsRegistry: {
         [aspectId: string]: AspectType;
     } = {};
 
-    constructor() {}
+    /**
+     * Enable some aspects.
+     * @param aspects - the aspects to enable
+     */
     enable(...aspects: (AspectType | WeaverProfile)[]): this {
         aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
@@ -22,6 +25,11 @@ export class WeaverProfile {
         });
         return this;
     }
+
+    /**
+     * Disable some aspects.
+     * @param aspects - the aspects to disable
+     */
     disable(...aspects: (AspectType | string | WeaverProfile)[]): this {
         aspects.forEach((p) => {
             if (p instanceof WeaverProfile) {
@@ -38,10 +46,12 @@ export class WeaverProfile {
         });
         return this;
     }
-    reset(): this {
-        this._aspectsRegistry = {};
-        return this;
-    }
+
+    /**
+     * Enable or disable an aspect
+     * @param aspect - the aspect to enable or disable
+     * @param enabled - enable or disable the given aspect
+     */
     setEnabled(aspect: AspectType, enabled: boolean): this {
         const id = getAspectOptions(aspect).id;
         if (enabled) {
@@ -62,6 +72,12 @@ export class WeaverProfile {
 
         return this;
     }
+
+    /**
+     * Find an aspect among registered aspect given its aspect id or constructor.
+     * @param aspect - the aspect id or constructor to find.
+     * @returns The aspect if registered, undefined otherwise
+     */
     getAspect<T extends AspectType>(aspect: string | (new () => T)): T | undefined {
         if (isString(aspect)) {
             return this._aspectsRegistry[aspect] as T;
@@ -70,10 +86,16 @@ export class WeaverProfile {
         }
     }
 
-    getAspects<T extends AspectType>(): AspectType[] {
+    /**
+     * Get all registered aspects
+     */
+    getAspects(): AspectType[] {
         return Object.values(this._aspectsRegistry);
     }
 
+    /**
+     * iterate over all registered aspects
+     */
     [Symbol.iterator](): Iterator<AspectType> {
         const aspects = this.getAspects();
         let i = 0;

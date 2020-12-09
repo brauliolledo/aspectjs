@@ -1,6 +1,6 @@
 # AspectJS
 
-> The AOP framework for Javascript and Typescript
+> The AOP framework for Javascript, Typescript, Browser & Node
 
 ![logo]
 
@@ -36,7 +36,7 @@ npm install --save reflect-metadata
 ```javascript
 import { AnnotationFactory, BeforeContext, on, AnnotationType } from '@aspectjs/core/commons';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
-import { WEAVER_CONTEXT } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/core';
 
 // Define the annotation
 const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message) {});
@@ -73,7 +73,7 @@ class DeprecatedAspect {
 }
 
 // Enable DeprecatedAspect
-WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
+WEAVER.enable(new DeprecatedAspect());
 
 // Use the aspect
 (function main() {

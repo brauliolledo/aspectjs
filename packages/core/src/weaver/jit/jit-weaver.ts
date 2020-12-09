@@ -85,11 +85,6 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         return super.disable(..._aspects);
     }
 
-    reset(): this {
-        this._planFactory = new _AdviceExecutionPlanFactory();
-        return super.reset();
-    }
-
     enhance<T>(target: AnnotationTarget<T>): void | Function | PropertyDescriptor {
         const ctxt = new AdviceContextImpl(target, this._context.annotations.bundle.at(target.location));
 

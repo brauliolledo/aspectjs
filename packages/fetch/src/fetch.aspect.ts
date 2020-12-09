@@ -1,5 +1,6 @@
 import { AfterReturn, Aspect } from '@aspectjs/core/annotations';
 import { AfterContext, AnnotationType, on } from '@aspectjs/core/commons';
+import { ANNOTATIONS } from '@aspectjs/core';
 import { Delete, FetchAnnotationType, FetchClient, Get, Patch, Post, Put } from '@aspectjs/fetch/annotations';
 import { FetchAspectOptions } from 'fetch/annotations/src/types';
 
@@ -39,7 +40,10 @@ export class FetchAspect {
     ) {
         const requestTemplates = [
             this.options,
-            ...[context.annotations.onClass(FetchClient)[0], context.annotations.onSelf(annotation)[0]]
+            ...[
+                ANNOTATIONS.at(context.target.declaringClass.location).onSelf(FetchClient)[0],
+                context.annotations.onSelf(annotation)[0],
+            ]
                 .filter((c) => !!c?.args[0])
                 .map((c) => c.args[0])
                 .map((r) => {

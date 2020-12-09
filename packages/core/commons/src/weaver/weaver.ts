@@ -1,13 +1,12 @@
-import { AnnotationType } from '../annotation/annotation.types';
-import { AnnotationTarget } from '../annotation/target/annotation-target';
+import { AdviceType } from '../advices';
+import { AdviceTarget } from '../annotation/target/annotation-target';
 import { AspectType } from '../aspect';
-import { WeaverProfile } from './profile';
 
 /**
  * A Weaver is some sort of processor that invoke the advices according to the enabled aspects
  * @public
  */
-export interface Weaver extends WeaverProfile {
+export interface Weaver {
     /**
      * Enable some aspects.
      * @param aspects - the aspects to enable
@@ -21,9 +20,33 @@ export interface Weaver extends WeaverProfile {
     disable(...aspects: (AspectType | string)[]): this;
 
     /**
-     * Disable all aspects.
+     * Enable or disable an aspect
+     * @param aspect - the aspect to enable or disable
+     * @param enabled - enable or disable the given aspect
      */
-    reset(): this;
+    setEnabled(aspect: AspectType, enabled: boolean): this;
 
-    enhance<T>(target: AnnotationTarget<T, AnnotationType>): Function | PropertyDescriptor | void;
+    /**
+     * Find an aspect among registered aspect given its aspect id or constructor.
+     * @param aspect - the aspect id or constructor to find.
+     * @returns The aspect if registered, undefined otherwise
+     */
+    getAspect<T extends AspectType>(aspect: string | (new () => T)): T | undefined;
+
+    /**
+     * Get all registered aspects
+     */
+    getAspects(): AspectType[];
+    [Symbol.iterator](): Iterator<AspectType>;
+
+    /**
+     * iterate over all registered aspects
+     */
+    [Symbol.iterator](): Iterator<AspectType>;
+
+    /**
+     * Enhance the given targeted code.
+     * @param target the target to enhance
+     */
+    enhance<T>(target: AdviceTarget<T, AdviceType>): Function | PropertyDescriptor | void;
 }

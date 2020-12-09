@@ -1,4 +1,4 @@
-import { WEAVER_CONTEXT } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/core';
 import { MemoProfile, MemoProfileFeatures } from './profiles/default.profile';
 
 /**
@@ -6,7 +6,7 @@ import { MemoProfile, MemoProfileFeatures } from './profiles/default.profile';
  */
 class DefaultMemoProfile extends MemoProfile {
     register() {
-        WEAVER_CONTEXT.getWeaver().enable(this);
+        WEAVER.enable(this);
     }
 
     configure(features: MemoProfileFeatures): DefaultMemoProfile {

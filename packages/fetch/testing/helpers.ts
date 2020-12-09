@@ -21,7 +21,14 @@ function _setupFetchMock(baseUrl: string): typeof fetch {
         .mock(
             {
                 url: baseUrl,
-                sendAsJson: true,
+            },
+            {
+                status: 404,
+            },
+        )
+        .mock(
+            {
+                url: `${baseUrl}/api`,
             },
             {
                 status: 404,

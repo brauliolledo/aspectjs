@@ -31,7 +31,15 @@ export type AnnotationBundleRegistry<T = unknown, A extends AnnotationType = any
 /**
  * @public
  */
-export type AnnotationsBundle<T = unknown> = ClassAnnotationsBundle<T>;
+export type AnnotationsBundle<T = unknown, A extends AnnotationType = any> = A extends AnnotationType.CLASS
+    ? ClassAnnotationsBundle<T>
+    : A extends AnnotationType.METHOD
+    ? MethodAnnotationsBundle<T>
+    : A extends AnnotationType.PARAMETER
+    ? ParameterAnnotationsBundle<T>
+    : A extends AnnotationType.PROPERTY
+    ? PropertyAnnotationsBundle<T>
+    : never;
 
 /**
  * @public
@@ -57,6 +65,7 @@ export interface MethodAnnotationsBundle<T = unknown> {
     all(
         ...annotation: (Annotation<AnnotationType.METHOD | AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD | AnnotationType.PARAMETER>[];
+
     onParameter(
         ...annotation: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[];
@@ -91,6 +100,9 @@ export interface ParameterAnnotationsBundle<T = unknown> {
  */
 export class RootAnnotationsBundle {
     constructor(protected _registry: AnnotationBundleRegistry) {}
+    at<T>(location: MethodAnnotationLocation<T>, searchParents?: boolean): MethodAnnotationsBundle<T>;
+    at<T>(location: ParametersAnnotationLocation<T>, searchParents?: boolean): ParameterAnnotationsBundle<T>;
+    at<T>(location: PropertyAnnotationLocation<T>, searchParents?: boolean): PropertyAnnotationsBundle<T>;
     at<T>(location: ClassAnnotationLocation<T>, searchParents?: boolean): ClassAnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents?: boolean): AnnotationsBundle<T>;
     at<T>(location: AnnotationLocation<T>, searchParents = true): AnnotationsBundle<T> {

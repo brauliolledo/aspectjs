@@ -7,7 +7,6 @@ import { FetchAspectOptions } from './types';
 const BASE_URL = 'http://my-company.com';
 
 // Common tests case for all fetch methods
-// TODO test @FetchClient(RequestInit)
 // TODO test @Get(RequestInit)
 // TODO test @PathParam
 // TODO test @QueryParam
@@ -20,11 +19,12 @@ export function fetchMethodCommonTest(
     let fetchAdapter: FetchMockStatic;
     let options: FetchAspectOptions;
 
-    fdescribe('calling a method', () => {
+    describe('calling a method', () => {
         beforeEach(() => {
             options = { url: BASE_URL } as any;
             setupFetchAspect(options);
             fetchAdapter = options.fetchAdapter as any;
+            fetchAdapter.resetHistory();
         });
 
         const method: keyof FetchResource = methodAnnotation.name.toLocaleLowerCase() as any;
@@ -40,8 +40,6 @@ export function fetchMethodCommonTest(
                     }
 
                     resource = new FetchResourceImpl();
-
-                    fetchAdapter.resetHistory();
                 });
 
                 it(`should issue an http ${method.toUpperCase()} on ${BASE_URL}`, () => {
@@ -65,8 +63,6 @@ export function fetchMethodCommonTest(
                     }
 
                     resource = new FetchResourceImpl();
-
-                    fetchAdapter.resetHistory();
                 });
 
                 it(`should issue an http ${method.toUpperCase()} on ${BASE_URL}`, () => {
@@ -90,11 +86,33 @@ export function fetchMethodCommonTest(
                     }
 
                     resource = new FetchResourceImpl();
-
-                    fetchAdapter.resetHistory();
                 });
 
-                it(`should issue an http ${method.toUpperCase()} on ${BASE_URL}`, () => {
+                it(`should issue an http ${method.toUpperCase()} on ${BASE_URL}/api`, () => {
+                    resource[method]();
+                    expect(
+                        fetchAdapter.called(`${options.url}/api`, {
+                            method,
+                        }),
+                    ).toBeTrue();
+                });
+            });
+            describe(`when the class has a ${FetchClient}(Request) annotation`, () => {
+                beforeEach(() => {
+                    @FetchClient({
+                        url: 'api',
+                    })
+                    class FetchResourceImpl implements FetchResource {
+                        @((methodAnnotation as any)())
+                        [method](): Promise<unknown> {
+                            return;
+                        }
+                    }
+
+                    resource = new FetchResourceImpl();
+                });
+
+                it(`should issue an http ${method.toUpperCase()} on ${BASE_URL}/api`, () => {
                     resource[method]();
                     expect(
                         fetchAdapter.called(`${options.url}/api`, {
@@ -117,8 +135,6 @@ export function fetchMethodCommonTest(
                     }
 
                     resource = new FetchResourceImpl();
-
-                    fetchAdapter.resetHistory();
                 });
 
                 it(`should issue an http ${method.toUpperCase()} on ${resourceUrl}`, () => {

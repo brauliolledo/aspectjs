@@ -9,7 +9,7 @@ export interface AfterContext<T = unknown, A extends AdviceType = any> {
     /** The applied advice **/
     readonly advice: Advice<T, A>;
     /** The annotations contexts **/
-    readonly annotations: AnnotationsBundle<T>;
+    readonly annotations: AnnotationsBundle<T, A>;
     /** The 'this' instance bound to the current execution context **/
     readonly instance: T;
     /** the arguments originally passed to the joinpoint **/

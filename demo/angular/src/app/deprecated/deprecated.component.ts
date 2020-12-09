@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { AnnotationFactory, AnnotationType, BeforeContext, on } from '@aspectjs/core/commons';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
-import { WEAVER_CONTEXT } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/core';
 import { Memo } from '@aspectjs/memo';
 
 const af = new AnnotationFactory('test');
@@ -32,7 +32,7 @@ class DeprecatedAspect {
     }
 }
 
-WEAVER_CONTEXT.getWeaver().enable(new DeprecatedAspect());
+WEAVER.enable(new DeprecatedAspect());
 
 @Deprecated()
 @Component({

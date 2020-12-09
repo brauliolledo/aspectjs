@@ -1,4 +1,4 @@
-import { WEAVER_CONTEXT } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/core';
 import { assert, isUndefined } from '@aspectjs/core/utils';
 import { WeavingError } from '@aspectjs/core/commons';
 import { Cacheable } from '../../cacheable/cacheable.annotation';
@@ -75,12 +75,7 @@ export class CacheableMarshaller extends MemoMarshaller {
 }
 
 function typeStore(): CacheTypeStore {
-    const weaver = WEAVER_CONTEXT.getWeaver();
-    if (!weaver) {
-        throw new WeavingError('no weaver configured. Please call setWeaver()');
-    }
-
-    const cacheableAspect = weaver.getAspect('@aspectjs/cacheable') as CacheableAspect;
+    const cacheableAspect = WEAVER.getAspect('@aspectjs/cacheable') as CacheableAspect;
 
     if (!cacheableAspect) {
         throw new WeavingError(
