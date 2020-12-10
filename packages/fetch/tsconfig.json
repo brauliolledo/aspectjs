@@ -11,7 +11,8 @@
   "compilerOptions": {
     "lib": [
       "dom",
-      "es2019.array"
+      "es2019.array",
+      "es2020.string"
     ],
     "rootDir": ".",
     "outDir": "dist",

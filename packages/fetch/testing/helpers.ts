@@ -8,11 +8,14 @@ import { Delete, Get, Patch, Post, Put } from '../annotations/public_api';
 
 const ALL_HTTP_ANNOTATIONS = [Get, Post, Put, Delete, Patch];
 
-export function setupFetchAspect(options?: Partial<FetchAspectOptions>) {
+export function setupFetchAspect(options?: Partial<FetchAspectOptions>): FetchAspectOptions {
+    options = options ?? {};
     options.url = options.url ?? 'http://my-company.com';
     options.fetchAdapter = options.fetchAdapter ?? _setupFetchMock(`${options.url}`);
 
-    return setupTestingWeaverContext(new FetchAspect(options as any));
+    setupTestingWeaverContext(new FetchAspect(options as any));
+
+    return options as FetchAspectOptions;
 }
 
 function _setupFetchMock(baseUrl: string): typeof fetch {
@@ -28,7 +31,7 @@ function _setupFetchMock(baseUrl: string): typeof fetch {
         )
         .mock(
             {
-                url: `${baseUrl}/api`,
+                url: /\/api$/,
             },
             {
                 status: 404,
@@ -37,12 +40,48 @@ function _setupFetchMock(baseUrl: string): typeof fetch {
         .mock(
             {
                 method: 'get',
-                url: `${baseUrl}/api/users`,
+                url: /\/api\/users$/,
             },
             {
                 status: 200,
                 body: {
                     content: _generateUsers(),
+                },
+            },
+        )
+        .mock(
+            {
+                method: 'get',
+                url: /\/api\/users\/\d+$/,
+            },
+            {
+                status: 200,
+                body: {
+                    content: _generateUsers()[0],
+                },
+            },
+        )
+        .mock(
+            {
+                method: 'get',
+                url: /\/api\/users\/\d+\/books$/,
+            },
+            {
+                status: 200,
+                body: {
+                    content: _generateBooks(),
+                },
+            },
+        )
+        .mock(
+            {
+                method: 'get',
+                url: /\/api\/users\/\d+\/books\/(\w|-)+$/,
+            },
+            {
+                status: 200,
+                body: {
+                    content: _generateBooks(),
                 },
             },
         );
@@ -53,7 +92,7 @@ function _setupFetchMock(baseUrl: string): typeof fetch {
             fetch = fetch.mock(
                 {
                     method,
-                    url: `${baseUrl}/api/users`,
+                    url: /\/api\/users$/,
                 },
                 {
                     status: 200,
@@ -77,5 +116,14 @@ function _generateUsers() {
         firstName: `user_${i}`,
         lastName: `USER_${i}`,
         id: i,
+    }));
+}
+
+function _generateBooks() {
+    return [...Array(10).keys()].map((i) => ({
+        title: `book_${i}`,
+        author: `Author_${i}`,
+        id: i,
+        isbn: `isbn_${i}`,
     }));
 }

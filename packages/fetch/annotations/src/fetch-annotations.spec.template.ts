@@ -12,6 +12,8 @@ const BASE_URL = 'http://my-company.com';
 // TODO test @QueryParam
 // TODO test @QueryParams
 // TODO test @Headers
+// TODO test @Body
+// TODO test @Mapper
 export function fetchMethodCommonTest(
     methodAnnotation: typeof Get | typeof Post | typeof Put | typeof Patch | typeof Delete,
 ) {

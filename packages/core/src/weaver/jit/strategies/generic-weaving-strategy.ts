@@ -30,7 +30,9 @@ export abstract class _GenericWeavingStrategy<T, A extends AdviceType> implement
         ctxt.value = ctxt.value; // force key 'value' to be present
 
         advices.forEach((advice) => {
+            ctxt.advice = advice;
             ctxt.value = advice(ctxt, ctxt.value);
+            delete ctxt.advice;
         });
 
         return ctxt.value as T;
