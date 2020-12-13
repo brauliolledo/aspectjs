@@ -40,7 +40,7 @@ function _setupFetchMock(baseUrl: string): typeof fetch {
         .mock(
             {
                 method: 'get',
-                url: /\/api\/users$/,
+                url: /\/api\/users\??.*$/,
             },
             {
                 status: 200,

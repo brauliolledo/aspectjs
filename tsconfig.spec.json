@@ -6,7 +6,8 @@
     "module": "commonjs",
     "lib": [
       "dom",
-      "ES2019.Array"
+      "ES2019.Array",
+      "ESNext"
     ]
   },
   "include": [

@@ -1,6 +1,13 @@
-import { ANNOTATIONS } from '@aspectjs/core';
+import { ANNOTATIONS, LOCATION } from '@aspectjs/core';
 import { AfterReturn, Aspect } from '@aspectjs/core/annotations';
-import { AfterContext, AnnotationContext, AnnotationType, AspectError, on } from '@aspectjs/core/commons';
+import {
+    AfterReturnContext,
+    Annotation,
+    AnnotationContext,
+    AnnotationType,
+    AspectError,
+    on,
+} from '@aspectjs/core/commons';
 import {
     Delete,
     FetchAnnotationType,
@@ -10,6 +17,7 @@ import {
     PathParam,
     Post,
     Put,
+    QueryParam,
 } from '@aspectjs/fetch/annotations';
 import { assert } from 'console';
 import { FetchAspectOptions } from 'fetch/annotations/src/types';
@@ -22,6 +30,8 @@ type PathParamTemplate = {
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
+export type RequestLike = Mutable<Request>;
+
 @Aspect()
 export class FetchAspect {
     constructor(private options?: FetchAspectOptions) {
@@ -32,32 +42,32 @@ export class FetchAspect {
     }
 
     @AfterReturn(on.method.withAnnotations(Get))
-    protected _doGet(context: AfterContext<unknown, AnnotationType.METHOD>) {
+    protected _doGet(context: AfterReturnContext<unknown, AnnotationType.METHOD>) {
         return this._doFetch(context, 'GET', Get);
     }
 
     @AfterReturn(on.method.withAnnotations(Post))
-    protected _doPost(context: AfterContext<unknown, AnnotationType.METHOD>) {
+    protected _doPost(context: AfterReturnContext<unknown, AnnotationType.METHOD>) {
         return this._doFetch(context, 'POST', Post);
     }
 
     @AfterReturn(on.method.withAnnotations(Put))
-    protected _doPut(context: AfterContext<unknown, AnnotationType.METHOD>) {
+    protected _doPut(context: AfterReturnContext<unknown, AnnotationType.METHOD>) {
         return this._doFetch(context, 'PUT', Put);
     }
 
     @AfterReturn(on.method.withAnnotations(Patch))
-    protected _doPatch(context: AfterContext<unknown, AnnotationType.METHOD>) {
+    protected _doPatch(context: AfterReturnContext<unknown, AnnotationType.METHOD>) {
         return this._doFetch(context, 'PATCH', Patch);
     }
 
     @AfterReturn(on.method.withAnnotations(Delete))
-    protected _doDelete(context: AfterContext<unknown, AnnotationType.METHOD>) {
+    protected _doDelete(context: AfterReturnContext<unknown, AnnotationType.METHOD>) {
         return this._doFetch(context, 'DELETE', Delete);
     }
 
     protected _doFetch(
-        context: AfterContext<unknown, AnnotationType.METHOD>,
+        context: AfterReturnContext<unknown, AnnotationType.METHOD>,
         method: string,
         annotation: FetchAnnotationType,
     ) {
@@ -79,8 +89,8 @@ export class FetchAspect {
         ];
 
         const request = this._createRequest(method, requestTemplates);
-        request.url = this._processPathParams(context, request);
-
+        this._processPathParams(context, request);
+        this._processQueryParams(context, request);
         return this._fetch()(request.url, request);
     }
 
@@ -92,8 +102,8 @@ export class FetchAspect {
         }));
     }
 
-    protected _processPathParams(context: AfterContext, request: Request): string {
-        const pathParams = context.annotations.all(PathParam);
+    protected _processPathParams(context: AfterReturnContext, request: RequestLike): Request {
+        const pathParamAnnotations = context.annotations.all(PathParam);
         const paramTemplates = this._getPathParamTemplates(request).reduce((params, param) => {
             params.set(param.name, param);
             return params;
@@ -103,7 +113,7 @@ export class FetchAspect {
         const positionalPathParams: AnnotationContext[] = [];
 
         // split named params & positional params
-        pathParams.forEach((annotation) => {
+        pathParamAnnotations.forEach((annotation) => {
             if (annotation.args[0]) {
                 const paramName = annotation.args[0];
                 if (namedPathParams[paramName]) {
@@ -118,11 +128,9 @@ export class FetchAspect {
             }
         });
 
-        let url = request.url;
-
         const replacePathParam = (url: string, pathParamTemplate: PathParamTemplate, annotation: AnnotationContext) => {
             assert(pathParamTemplate || annotation);
-            if (!pathParams && !annotation) {
+            if (!pathParamAnnotations && !annotation) {
                 return url;
             } else if (!annotation && pathParamTemplate) {
                 throw new AspectError(
@@ -135,14 +143,18 @@ export class FetchAspect {
                     `Unbound ${PathParam}(${annotation.args[0] ?? ''}) on ${annotation.target.label}`,
                 );
             }
-            return replaceAll(url, pathParamTemplate.placeholder, this._getArgValue(context, annotation));
+            return replaceAll(
+                url,
+                pathParamTemplate.placeholder,
+                this._serializeAnnotatedValue(context.args[annotation.target.parameterIndex], annotation),
+            );
         };
 
         // apply named @PathParams
         Object.entries(namedPathParams)
             .sort(([k1, p1], [k2, p2]) => p1.target.parameterIndex - p2.target.parameterIndex)
             .forEach(([k, v]) => {
-                url = replacePathParam(url, paramTemplates.get(k), v);
+                request.url = replacePathParam(request.url, paramTemplates.get(k), v);
                 paramTemplates.delete(k);
             });
 
@@ -150,7 +162,7 @@ export class FetchAspect {
         const remainingParams = [...paramTemplates.values()];
         positionalPathParams
             .sort((p1, p2) => p1.target.parameterIndex - p2.target.parameterIndex)
-            .forEach((p) => (url = replacePathParam(url, remainingParams.shift(), p)));
+            .forEach((p) => (request.url = replacePathParam(request.url, remainingParams.shift(), p)));
         if (remainingParams.length) {
             throw new AspectError(
                 context,
@@ -158,21 +170,72 @@ export class FetchAspect {
             );
         }
 
-        return url;
+        return request;
     }
 
-    protected _getArgValue(context: AfterContext, annotation: AnnotationContext) {
+    protected _processQueryParams(context: AfterReturnContext, request: RequestLike): Request {
+        // search @QueryParams on parameters
+        const queryParamAnnotations = [...context.annotations.all(QueryParam)];
+
+        // resolve @QueryParams values
+        const queryParams = queryParamAnnotations.reduce((qps, annotation) => {
+            const targetArg = annotation.target;
+            const argValue = context.args[targetArg.parameterIndex];
+            let nestedQueryParamAnnotations: readonly AnnotationContext[] = [];
+            // search for nested @QueryParam
+            if (typeof argValue === 'object') {
+                nestedQueryParamAnnotations = ANNOTATIONS.at(LOCATION.of(argValue)).all(QueryParam);
+            }
+            if (nestedQueryParamAnnotations.length) {
+                const rootName = this._serialize(annotation.args[0], () => undefined);
+                nestedQueryParamAnnotations.forEach((a) => {
+                    const name = [rootName, a.args[0]].filter((p) => !!p).join('.');
+                    const strValue = this._serializeAnnotatedValue(a.args, a);
+                    qps.unshift([name, strValue]);
+                });
+            } else {
+                const name = this._serialize(annotation.args[0], () => {
+                    throw new AspectError(context, `${QueryParam} on ${annotation.target} does not have a name`);
+                });
+
+                const strValue = this._serializeAnnotatedValue(
+                    context.args[annotation.target.parameterIndex],
+                    annotation,
+                );
+
+                qps.unshift([name, strValue]);
+            }
+
+            return qps;
+        }, [] as [string, string][]);
+
+        const url = new URL(request.url);
+        const search = url.search.replace(/^\?/, '');
+        const queryString = [search, new URLSearchParams(queryParams).toString()].filter((q) => !!q).join('&');
+        url.search = queryString.length ? `?${queryString}` : '';
+        request.url = url.toString();
+
+        return request;
+    }
+
+    protected _serializeAnnotatedValue(value: unknown, annotation: AnnotationContext) {
         // get parameter value of the annotated argument
-        const targetArg = annotation.target;
-        const argValue = context.args[targetArg.parameterIndex];
-        const strValue = `${argValue}`;
+        return this._serialize(value, (s) => {
+            console.warn(`${annotation} on ${annotation.target.label}: value resolved to ${s}`);
+            return s;
+        });
+    }
+
+    protected _serialize(obj: any, undefinedCb = (arg: any): any => {}): string {
+        const strValue = `${obj}`;
         if (strValue === {}.toString() || strValue === 'undefined') {
-            console.warn(`${annotation} on ${targetArg.label}: value resolved to ${strValue}`);
+            return undefinedCb(strValue);
         }
 
         return strValue;
     }
-    protected _createRequest(method: string, requestTemplates: Request[]): Mutable<Request> {
+
+    protected _createRequest(method: string, requestTemplates: Request[]): RequestLike {
         const request = requestTemplates.reduce(
             (request, r) => {
                 let url = request.url;
