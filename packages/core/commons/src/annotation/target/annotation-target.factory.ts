@@ -12,7 +12,7 @@ import {
 } from '@aspectjs/core/utils';
 import { AdviceType } from '../../advices/types';
 import { AnnotationType } from '../annotation.types';
-import { AnnotationLocation, MethodAnnotationLocation } from '../location/annotation-location';
+import { AnnotationLocation, ClassAnnotationLocation, MethodAnnotationLocation } from '../location/annotation-location';
 import {
     AdviceTarget,
     ClassAdviceTarget,
@@ -114,7 +114,7 @@ function _metaKey(ref: string): string {
 
 class AnnotationTargetImpl {
     toString() {
-        return ((this as any) as AdviceTarget<any, any>).ref;
+        return ((this as any) as AdviceTarget<any, any>).label;
     }
 }
 
@@ -221,7 +221,7 @@ function _createAllParametersAnnotationTarget<T, D extends AdviceType.PARAMETER 
         parent: _declaringMethodTargetProperty(targetFactory, target),
         parentClass: _parentClassTargetProperty(targetFactory, target),
     });
-    target.location = target.location ?? _createLocation(target, []);
+    target.location = target.location ?? _createLocation(target);
     return target;
 }
 function _createParameterAnnotationTarget<T, D extends AdviceType.PARAMETER>(
@@ -327,20 +327,82 @@ function _declaringMethodTargetProperty(
 
 function _createLocation<T, A extends AnnotationType>(
     target: Partial<AdviceTarget<T, A>>,
-    locationStub: any = new AdviceLocationImpl(),
+    runtimeContext?: RuntimeTargetContext<T>,
 ): AnnotationLocation<T, A> {
-    const proto = Object.create(Reflect.getPrototypeOf(locationStub));
-    proto.getTarget = () => {
-        return target;
-    };
+    function getTarget(): AdviceTarget<T, A> {
+        return target as AdviceTarget<T, A>;
+    }
 
-    Reflect.setPrototypeOf(locationStub, proto);
+    let locationStub: AnnotationLocation<T, A> = new (class extends _AnnotationLocationImpl<T, A> {
+        getTarget(): AdviceTarget<T, A> {
+            return getTarget.call(this);
+        }
+        bindRuntimeContext(context: RuntimeTargetContext<T>): AnnotationLocation<T> {
+            const loc = _createLocation(target, context);
+            if (this instanceof Array) {
+                this.map((_, i) => i).forEach((n: number) => {
+                    (loc as any)[n] = (this as any)[n];
+                });
+            } else {
+                Object.getOwnPropertyNames(this).forEach((n: string) => {
+                    (loc as any)[n] = (Reflect.getPrototypeOf(
+                        (this as any)[n],
+                    ) as _AnnotationLocationImpl<T>).bindRuntimeContext.call((this as any)[n], context);
+                });
+            }
+            return loc;
+        }
+        getRuntimeContext(): RuntimeTargetContext<T> {
+            if (!runtimeContext) {
+                throw new TypeError('location is not bound to a value');
+            }
+            return runtimeContext;
+        }
 
-    return locationStub as AnnotationLocation<T, A>;
+        isBound() {
+            return !!runtimeContext;
+        }
+    })() as any;
+
+    if (target.type === AnnotationType.PARAMETER) {
+        const locationProto = Reflect.getPrototypeOf(locationStub);
+        locationStub = [] as any;
+        Reflect.setPrototypeOf(locationStub, new Array());
+        Object.getOwnPropertyNames(locationProto).forEach((n) => {
+            (Reflect.getPrototypeOf(locationStub) as any)[n] = (locationProto as any)[n];
+        });
+    }
+
+    return locationStub;
 }
 
-class AdviceLocationImpl<T, D extends AdviceType> {
-    getTarget(): AdviceTarget<T, AdviceType> {
-        throw new Error('No target registered');
+export abstract class _AnnotationLocationImpl<T, D extends AnnotationType = any> {
+    abstract getTarget(): AdviceTarget<T, D>;
+
+    abstract bindRuntimeContext(context: RuntimeTargetContext<T>): AnnotationLocation<T>;
+
+    abstract getRuntimeContext(): RuntimeTargetContext<T>;
+
+    abstract isBound(): boolean;
+
+    static unwrap<T, A extends AdviceType>(location: AnnotationLocation<T, A>): _AnnotationLocationImpl<T, A> {
+        assert(!!location);
+        const proto = Object.getPrototypeOf(location) as _AnnotationLocationImpl<T, A>;
+
+        const copyProps: (keyof _AnnotationLocationImpl<T, A>)[] = [
+            'getTarget',
+            'bindRuntimeContext',
+            'getRuntimeContext',
+            'isBound',
+        ];
+        return copyProps.reduce((loc, prop: keyof _AnnotationLocationImpl<T, A>) => {
+            loc[prop] = proto[prop].bind(location);
+            return loc;
+        }, {} as _AnnotationLocationImpl<T, A>);
     }
+}
+
+export interface RuntimeTargetContext<T = unknown> {
+    instance: T;
+    args?: unknown[];
 }

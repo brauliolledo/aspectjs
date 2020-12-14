@@ -1,4 +1,3 @@
-import { Around, Aspect, Before, Order } from '@aspectjs/core/annotations';
 import {
     AClass,
     AMethod,
@@ -10,6 +9,9 @@ import {
     BProperty,
     setupTestingWeaverContext,
 } from '@aspectjs/core/testing';
+import { Around, Aspect, Before, Order } from '../../../../annotations/public_api';
+import { AnnotationType } from '../../annotation/annotation.types';
+import { ValuedAnnotationContext } from '../../annotation/context/annotation.context';
 import { JoinPoint, on } from '../../types';
 import { Weaver } from '../../weaver';
 import { AdviceContext, AdviceType, AroundContext, BeforeContext } from '../types';
@@ -25,8 +27,8 @@ describe('BeforeContext', () => {
         weaver = setupTestingWeaverContext().getWeaver();
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');
         beforeBAdvice = jasmine.createSpy('beforeBAdvice');
-        aroundAAdvice = jasmine.createSpy('aroundAAdvice').and.callFake((ctxt, jp) => jp());
-        aroundBAdvice = jasmine.createSpy('aroundBAdvice').and.callFake((ctxt, jp) => jp());
+        aroundAAdvice = jasmine.createSpy('aroundAAdvice').and.callFake((_ctxt, jp) => jp());
+        aroundBAdvice = jasmine.createSpy('aroundBAdvice').and.callFake((_ctxt, jp) => jp());
     });
 
     describe('on a class', () => {
@@ -125,6 +127,30 @@ describe('BeforeContext', () => {
                 });
                 aroundBAdvice.and.callFake((ctxt: BeforeContext) => {
                     expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
+                });
+
+                @AClass()
+                @BClass()
+                class Test {}
+                new Test();
+            });
+        });
+        describe('attribute "ctxt.annotations"', () => {
+            it('should hold the annotations context', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.annotations.all().length).toEqual(2);
+                });
+
+                @AClass()
+                @BClass()
+                class Test {}
+                new Test();
+            });
+            it('should bind annotations value to null class instance', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    ctxt.annotations.all().forEach((a: ValuedAnnotationContext) => {
+                        expect(a.value).toEqual(null);
+                    });
                 });
 
                 @AClass()
@@ -243,23 +269,57 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
-        it('should be the current before advice', () => {
-            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
-            });
-            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
-            });
+        describe('attribute "ctxt.annotations"', () => {
+            it('should hold the annotations context', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext<Test, AnnotationType.PROPERTY>) => {
+                    expect(ctxt.annotations.onSelf().length).toEqual(2);
+                });
 
-            class Test {
-                @AProperty()
-                @BProperty()
-                prop: any;
-            }
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any = 'test';
+                }
 
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
-            new Test().prop;
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+                new Test().prop;
+                expect(beforeAAdvice).toHaveBeenCalled();
+            });
+            it('should bind annotations value to the property value', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    ctxt.annotations.all().forEach((a: ValuedAnnotationContext) => {
+                        expect(a.value).toEqual('test');
+                    });
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any = 'test';
+                }
+
+                new Test().prop;
+                expect(beforeAAdvice).toHaveBeenCalledTimes(1);
+            });
+        });
+        describe('attribute "ctxt.advice"', () => {
+            it('should be the current before advice', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                });
+                beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any;
+                }
+
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().prop;
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
     describe('on a property setter', () => {
@@ -369,24 +429,62 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
+        describe('attribute "ctxt.annotations"', () => {
+            it('should hold the annotations context', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext<Test, AnnotationType.PROPERTY>) => {
+                    expect(ctxt.annotations.onSelf().length).toEqual(2);
+                });
 
-        it('should be the current before advice', () => {
-            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any = 'test';
+                }
+
+                new Test().prop;
+                expect(beforeAAdvice).toHaveBeenCalled();
             });
-            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+            it('should bind annotations value to the property value', () => {
+                let propValue: any = undefined;
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    ctxt.annotations.all().forEach((a: ValuedAnnotationContext) => {
+                        expect(a.value).toEqual(propValue);
+                    });
+                    propValue = ctxt.args[0];
+                });
+
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any = 'test';
+                }
+
+                const t = new Test();
+                t.prop = 'test';
+                expect(beforeAAdvice).toHaveBeenCalledTimes(2);
+                expect(propValue).toEqual('test');
+                expect(t.prop).toEqual('test');
             });
+        });
+        describe('attribute ctxt.advice', () => {
+            it('should be the current before advice', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectA);
+                });
+                beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(propertyAspectB);
+                });
 
-            class Test {
-                @AProperty()
-                @BProperty()
-                prop: any;
-            }
+                class Test {
+                    @AProperty()
+                    @BProperty()
+                    prop: any;
+                }
 
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
-            new Test().prop = '';
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().prop = '';
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
     describe('on a method', () => {
@@ -494,23 +592,60 @@ describe('BeforeContext', () => {
             });
         });
 
-        it('should be the current before advice', () => {
-            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
-            });
-            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
-            });
+        describe('attribute "ctxt.annotations"', () => {
+            it('should hold the annotations context', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext<Test, AnnotationType.PROPERTY>) => {
+                    expect(ctxt.annotations.onSelf().length).toEqual(2);
+                    expect(ctxt.annotations.onSelf().map((a) => a.name)).toEqual(['BMethod', 'AMethod']);
+                });
 
-            class Test {
-                @AMethod()
-                @BMethod()
-                method(): any {}
-            }
+                class Test {
+                    @AMethod()
+                    @BMethod()
+                    method(): any {}
+                }
 
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
-            new Test().method();
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+                new Test().method();
+                expect(beforeAAdvice).toHaveBeenCalled();
+            });
+            it('should bind annotations value to the method', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    ctxt.annotations.all().forEach((a: ValuedAnnotationContext) => {
+                        expect(a.value).toEqual(Test.prototype.method);
+                    });
+                });
+
+                class Test {
+                    @AMethod()
+                    @BMethod()
+                    method(): any {}
+                }
+
+                new Test().method();
+
+                expect(beforeAAdvice).toHaveBeenCalledTimes(1);
+            });
+        });
+
+        describe('attribute ctxt.advice', () => {
+            it('should be the current before advice', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(methodAspectA);
+                });
+                beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(methodAspectB);
+                });
+
+                class Test {
+                    @AMethod()
+                    @BMethod()
+                    method(): any {}
+                }
+
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().method();
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
     describe('on a parameter', () => {
@@ -601,21 +736,52 @@ describe('BeforeContext', () => {
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
             });
         });
-        it('should be the current before advice', () => {
-            beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
-            });
-            beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
-                expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
-            });
+        describe('attribute "ctxt.annotations"', () => {
+            it('should hold the annotations context', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext<Test, AnnotationType.PROPERTY>) => {
+                    expect(ctxt.annotations.onSelf().length).toEqual(2);
+                });
 
-            class Test {
-                someMethod(@AParameter() @BParameter() param: any): any {}
-            }
+                class Test {
+                    someMethod(@AParameter() @BParameter() param: any): any {}
+                }
 
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
-            new Test().someMethod('');
-            [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+                new Test().someMethod('argValue');
+                expect(beforeAAdvice).toHaveBeenCalled();
+            });
+            it('should bind annotations value to the parameter value', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    ctxt.annotations.all().forEach((a: ValuedAnnotationContext) => {
+                        expect(a.value).toEqual('argValue');
+                    });
+                });
+
+                class Test {
+                    someMethod(@AParameter() @BParameter() param: any): any {}
+                }
+
+                new Test().someMethod('argValue');
+
+                expect(beforeAAdvice).toHaveBeenCalledTimes(1);
+            });
+        });
+        describe('attribute ctxt.advice', () => {
+            it('should be the current before advice', () => {
+                beforeAAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectA);
+                });
+                beforeBAdvice.and.callFake((ctxt: BeforeContext) => {
+                    expect(ctxt.advice.aspect.constructor).toEqual(parameterAspectB);
+                });
+
+                class Test {
+                    someMethod(@AParameter() @BParameter() param: any): any {}
+                }
+
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
+                new Test().someMethod('');
+                [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).toHaveBeenCalled());
+            });
         });
     });
 });

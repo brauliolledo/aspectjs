@@ -13,6 +13,7 @@ import {
     WeaverContext,
     WeaverProfile,
     WeavingError,
+    _AnnotationLocationImpl,
 } from '@aspectjs/core/commons';
 import { isFunction } from '@aspectjs/core/utils';
 import { _AdviceExecutionPlanFactory } from '../plan.factory';
@@ -86,19 +87,19 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     enhance<T>(target: AnnotationTarget<T>): void | Function | PropertyDescriptor {
-        const ctxt = new AdviceContextImpl(target, this._context.annotations.bundle.at(target.location));
+        const ctxt = new AdviceContextImpl(target, this._context);
 
         return this._enhancers[target.type](ctxt);
     }
 
     private _enhanceClass<T>(ctxt: MutableAdviceContext<T, AdviceType.CLASS>): new (...args: any[]) => T {
-        const plan = this._planFactory.create(ctxt.target, new _ClassWeavingStrategy());
+        const plan = this._planFactory.create(new _ClassWeavingStrategy());
         return plan.compile(ctxt).link();
     }
 
     private _enhanceProperty<T>(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>): PropertyDescriptor {
         const getterHooks = new _PropertyGetWeavingStrategy();
-        const gettersPlan = this._planFactory.create(ctxt.target, getterHooks, {
+        const gettersPlan = this._planFactory.create(getterHooks, {
             name: 'get',
             fn: _isPropertyGet,
         });
@@ -106,7 +107,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
         const newDescriptor = gettersPlan.compile(ctxt).link();
 
         if (_isDescriptorWritable(newDescriptor)) {
-            const settersPlan = this._planFactory.create(ctxt.target, new _PropertySetWeavingStrategy(getterHooks), {
+            const settersPlan = this._planFactory.create(new _PropertySetWeavingStrategy(getterHooks), {
                 name: 'set',
                 fn: _isPropertySet,
             });
@@ -124,12 +125,12 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     }
 
     private _enhanceMethod<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor {
-        const plan = this._planFactory.create(ctxt.target, new _MethodWeavingStrategy());
+        const plan = this._planFactory.create(new _MethodWeavingStrategy());
         return plan.compile(ctxt).link();
     }
 
     private _enhanceParameter<T>(ctxt: MutableAdviceContext<T, AdviceType.METHOD>): PropertyDescriptor {
-        const plan = this._planFactory.create(ctxt.target, new _ParameterWeavingStrategy());
+        const plan = this._planFactory.create(new _ParameterWeavingStrategy());
         return plan.compile(ctxt).link();
     }
 }
@@ -156,12 +157,19 @@ class AdviceContextImpl<T, A extends AdviceType> implements MutableAdviceContext
     public joinpoint: JoinPoint;
     public target: AdviceTarget<T, A>;
     public data: Record<string, any>;
-    public annotations: AnnotationsBundle;
 
-    constructor(target: AdviceTarget<any, A>, bundle: AnnotationsBundle<T>) {
+    constructor(target: AdviceTarget<any, A>, private readonly _weaverContext: WeaverContext) {
         this.target = target;
         this.data = {};
-        this.annotations = bundle;
+    }
+
+    get annotations(): AnnotationsBundle {
+        return this._weaverContext.annotations.bundle.at(
+            _AnnotationLocationImpl.unwrap(this.target.location).bindRuntimeContext({
+                instance: this.instance,
+                args: this.args,
+            }),
+        );
     }
 
     clone(): this {

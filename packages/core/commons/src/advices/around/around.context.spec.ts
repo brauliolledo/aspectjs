@@ -115,7 +115,7 @@ describe('AroundContext', () => {
                 @BClass()
                 class Test {}
                 new Test();
-                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnB', 'afterReturnA']);
             });
         });
 
@@ -272,7 +272,7 @@ describe('AroundContext', () => {
                 [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((f) =>
                     expect(f).toHaveBeenCalled(),
                 );
-                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnB', 'afterReturnA']);
             });
 
             it('should be the current around advice', () => {
@@ -402,7 +402,7 @@ describe('AroundContext', () => {
                 [aroundAAdvice, aroundBAdvice, afterReturnAAdvice, afterReturnBAdvice].forEach((fn) =>
                     expect(fn).toHaveBeenCalled(),
                 );
-                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnB', 'afterReturnA']);
             });
 
             it('should be the current around advice', () => {
@@ -528,7 +528,7 @@ describe('AroundContext', () => {
                 }
 
                 new Test().method();
-                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnB', 'afterReturnA']);
             });
         });
 
@@ -638,7 +638,7 @@ describe('AroundContext', () => {
                 }
 
                 new Test().someMethod('');
-                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnA', 'afterReturnB']);
+                expect(data.advices).toEqual(['aroundA', 'aroundB', 'afterReturnB', 'afterReturnA']);
             });
         });
         it('should be the current around advice', () => {

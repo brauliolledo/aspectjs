@@ -10,6 +10,7 @@ import {
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
 import { assert, isFunction } from '@aspectjs/core/utils';
+import { _CompiledSymbol } from '../../weaving-strategy';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 import { _PropertyGetWeavingStrategy } from './property-get-weaving-strategy';
 
@@ -36,28 +37,35 @@ export class _PropertySetWeavingStrategy<T> extends _GenericWeavingStrategy<T, A
 
     around(
         ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
+        compiledSymbol: _CompiledSymbol<T, AdviceType.PROPERTY>,
         advices: AroundAdvice<T, AdviceType.PROPERTY>[],
         jp: JoinPoint<T>,
     ): JoinPoint<T> {
-        return super.around(ctxt, advices, jp, false);
+        return super.around(ctxt, compiledSymbol, advices, jp, false);
     }
 
     afterReturn(
         ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
+        compiledSymbol: _CompiledSymbol<T, AdviceType.PROPERTY>,
         advices: AfterReturnAdvice<T, AdviceType.PROPERTY>[],
     ): any {
-        return this._applyNonReturningAdvices(ctxt, advices);
+        return this._applyNonReturningAdvices(ctxt, compiledSymbol, advices);
     }
 
     afterThrow(
         ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
+        compiledSymbol: _CompiledSymbol<T, AdviceType.PROPERTY>,
         advices: AfterThrowAdvice<T, AdviceType.PROPERTY>[],
     ): any {
-        super.afterThrow(ctxt, advices, false);
+        super.afterThrow(ctxt, compiledSymbol, advices, false);
     }
 
-    after(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>, advices: AfterAdvice<T, AdviceType.PROPERTY>[]): void {
-        this._applyNonReturningAdvices(ctxt, advices);
+    after(
+        ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>,
+        compiledSymbol: _CompiledSymbol<T, AdviceType.PROPERTY>,
+        advices: AfterAdvice<T, AdviceType.PROPERTY>[],
+    ): void {
+        this._applyNonReturningAdvices(ctxt, compiledSymbol, advices);
     }
 
     finalize(

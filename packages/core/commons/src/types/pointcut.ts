@@ -81,12 +81,26 @@ export const on: PointcutExpressionBuilder = {
  * @public
  */
 export enum PointcutPhase {
-    COMPILE = 'Compile',
-    AROUND = 'Around',
-    BEFORE = 'Before',
-    AFTERRETURN = 'AfterReturn',
-    AFTER = 'After',
-    AFTERTHROW = 'AfterThrow',
+    COMPILE,
+    BEFORE,
+    AROUND,
+    AFTERRETURN,
+    AFTERTHROW,
+    AFTER,
+}
+
+export namespace PointcutPhase {
+    const strings: string[] = [];
+    strings[PointcutPhase.COMPILE] = 'Compile';
+    strings[PointcutPhase.BEFORE] = 'Before';
+    strings[PointcutPhase.AROUND] = 'Around';
+    strings[PointcutPhase.AFTERRETURN] = 'AfterReturn';
+    strings[PointcutPhase.AFTERTHROW] = 'AfterThrow';
+    strings[PointcutPhase.AFTER] = 'After';
+
+    export function toString(phase: PointcutPhase): string {
+        return strings[phase];
+    }
 }
 
 /**

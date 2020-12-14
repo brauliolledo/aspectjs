@@ -1,7 +1,7 @@
 import { AdviceType } from '../../advices/types';
-import { AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
+import { AdviceTarget, AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
 import { AnnotationLocation, ClassAnnotationLocation } from './annotation-location';
-import { AnnotationTargetFactory } from '../target/annotation-target.factory';
+import { AnnotationTargetFactory, _AnnotationLocationImpl } from '../target/annotation-target.factory';
 import { getProto } from '@aspectjs/core/utils';
 
 /**
@@ -10,10 +10,10 @@ import { getProto } from '@aspectjs/core/utils';
 export class AnnotationLocationFactory {
     constructor(private _targetFactory: AnnotationTargetFactory) {}
 
-    of<T>(obj: (new () => T) | T): ClassAnnotationLocation<T> {
+    of<T>(obj: { new (...args: any[]): T } | T): ClassAnnotationLocation<T> {
         const proto = getProto(obj);
         if (proto === Object.prototype) {
-            throw new Error('given object is neither a constructor nor a class instance');
+            throw new TypeError('given object is neither a constructor nor a class instance');
         }
 
         const target = this._targetFactory.create({
@@ -21,13 +21,13 @@ export class AnnotationLocationFactory {
             type: AdviceType.CLASS,
         }).declaringClass as ClassAdviceTarget<T>;
 
-        return target.location;
-    }
-
-    static getTarget<T>(location: AnnotationLocation<T>): AnnotationTarget<T> {
-        if (!location) {
-            return undefined;
+        let location = target.location;
+        if (obj !== proto && obj !== proto.constructor) {
+            // got a value. Bind the value to location
+            location = _AnnotationLocationImpl.unwrap(target.location).bindRuntimeContext({
+                instance: obj as T,
+            }) as ClassAnnotationLocation<T>;
         }
-        return Object.getPrototypeOf(location).getTarget();
+        return location;
     }
 }

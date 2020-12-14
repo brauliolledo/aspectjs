@@ -26,7 +26,7 @@ export type PropertyAnnotationLocation<T = unknown, P = unknown> = {
  */
 export type ParametersAnnotationLocation<T = unknown> = {
     [prop: string]: never;
-} & [];
+} & {}[];
 /**
  * @public
  */

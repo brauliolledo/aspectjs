@@ -11,7 +11,7 @@ import {
     ParameterAnnotationStub,
     PropertyAnnotationStub,
 } from '../annotation.types';
-import { AnnotationContext } from '../context/annotation.context';
+import { AnnotationContext, _AnnotationContextImpl } from '../context/annotation.context';
 import { AdviceTarget, AnnotationTarget } from '../target/annotation-target';
 
 let generatedId = 0;
@@ -159,7 +159,7 @@ function _createBootstrapDecorator<A extends AdviceType, S extends Annotation<Ad
         }
 
         const target = _getWeaverContext().annotations.targetFactory.of(targetArgs) as AnnotationTarget<any, A>;
-        const annotationContext = new AnnotationContextImpl(target, annotationArgs, annotation);
+        const annotationContext = new _AnnotationContextImpl(target, annotationArgs, annotation);
         weaverContext.annotations.registry.register(annotationContext);
 
         const enhanced = weaverContext.getWeaver().enhance(target);
@@ -168,10 +168,4 @@ function _createBootstrapDecorator<A extends AdviceType, S extends Annotation<Ad
         }
         return enhanced;
     };
-}
-
-class AnnotationContextImpl<T, D extends AdviceType> extends AnnotationContext<T, D> {
-    constructor(public readonly target: AdviceTarget<T, D>, public readonly args: any[], annotation: AnnotationRef) {
-        super(annotation.groupId, annotation.name);
-    }
 }

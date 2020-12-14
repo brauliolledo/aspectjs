@@ -1,4 +1,4 @@
-import { After, Aspect, Order } from '@aspectjs/core/annotations';
+import { After, Aspect, Order } from '../../../../annotations/public_api';
 import {
     AClass,
     AMethod,

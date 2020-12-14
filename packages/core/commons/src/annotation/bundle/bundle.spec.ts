@@ -21,7 +21,8 @@ import {
     XParameter,
     XProperty,
 } from '@aspectjs/core/testing';
-import { RootAnnotationsBundle, WeaverContext } from '@aspectjs/core/commons';
+import { RootAnnotationsBundle } from './bundle';
+import { WeaverContext } from '../../weaver/weaver-context';
 
 describe('RootAnnotationsBundle', () => {
     let rootBundle: RootAnnotationsBundle;
@@ -33,8 +34,10 @@ describe('RootAnnotationsBundle', () => {
 
     class Empty {
         somePropAB: string;
+        somePropCD: string;
 
         someMethodAB(...args: any[]) {}
+        someMethodCD(...args: any[]) {}
     }
 
     const empty = new Empty();
@@ -60,10 +63,12 @@ describe('RootAnnotationsBundle', () => {
 
             @CMethod()
             @DMethod()
-            someMethodCB(@CParameter() @DParameter() arg1: any, @CParameter() @DParameter() arg2: any) {}
+            someMethodCD(@CParameter() @DParameter() arg1: any, @CParameter() @DParameter() arg2: any) {}
         }
 
         abcd = new _ABCD();
+        abcd.somePropAB = 'somePropABValue';
+        abcd.somePropCD = 'somePropCDValue';
 
         @XClass()
         class X extends _ABCD {
@@ -520,12 +525,12 @@ describe('RootAnnotationsBundle', () => {
             });
         });
         describe('.onParameter()', () => {
-            describe('when located method uses no annotation', () => {
+            describe('when located method has no parameter with annotations', () => {
                 it('should return an empty array', () => {
                     expect(emptyMethodBundle().onParameter().length).toEqual(0);
                 });
             });
-            describe('when located method uses some annotations', () => {
+            describe('when located method has some parameters with annotations', () => {
                 it('should return all parameters annotations', () => {
                     const annotations = abMethodBundle().onParameter();
                     expect(annotations.length).toEqual(4);

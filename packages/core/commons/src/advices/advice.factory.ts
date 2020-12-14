@@ -40,7 +40,9 @@ export class _AdviceFactory {
 
         Reflect.defineProperty(advice, Symbol.toPrimitive, {
             value: () =>
-                `@${pointcut.phase}(${pointcut.annotation}) ${aspect.constructor.name}.${String(propertyKey)}()`,
+                `@${PointcutPhase.toString(pointcut.phase)}(${pointcut.annotation}) ${aspect.constructor.name}.${String(
+                    propertyKey,
+                )}()`,
         });
 
         Reflect.defineProperty(advice, 'name', {

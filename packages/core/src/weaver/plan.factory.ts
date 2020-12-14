@@ -18,7 +18,6 @@ import { _WeavingStrategy } from './weaving-strategy';
  */
 export class _AdviceExecutionPlanFactory {
     create<T, A extends AdviceType = any>(
-        target: AdviceTarget<T, A>,
         hooks: _WeavingStrategy<T, A>,
         filter?: {
             name: string;
@@ -34,9 +33,13 @@ export class _AdviceExecutionPlanFactory {
             }
             assert(!!compiledSymbol);
 
+            // TODO remove this extra jp ?
             const jp = function (...args: any[]): T {
+                const restoreArgs = ctxt.args;
+                const restoreInstance = ctxt.instance;
                 ctxt.args = args;
                 ctxt.instance = this;
+
                 const advicesReg = _getWeaverContext().aspects.registry.getAdvicesByTarget(
                     ctxt.target,
                     filter,
@@ -56,13 +59,18 @@ export class _AdviceExecutionPlanFactory {
 
                     try {
                         hooks.preBefore?.call(hooks, ctxt);
-                        hooks.before(ctxt, advicesReg[PointcutPhase.BEFORE] as Advice<T, A, PointcutPhase.BEFORE>[]);
+                        hooks.before(
+                            ctxt,
+                            compiledSymbol,
+                            advicesReg[PointcutPhase.BEFORE] as Advice<T, A, PointcutPhase.BEFORE>[],
+                        );
 
                         hooks.initialJoinpoint.call(hooks, ctxt, compiledSymbol);
 
                         hooks.preAfterReturn?.call(hooks, ctxt);
                         return hooks.afterReturn(
                             ctxt,
+                            compiledSymbol,
                             advicesReg[PointcutPhase.AFTERRETURN] as Advice<T, A, PointcutPhase.AFTERRETURN>[],
                         );
                     } catch (e) {
@@ -75,23 +83,34 @@ export class _AdviceExecutionPlanFactory {
                         hooks.preAfterThrow?.call(hooks, ctxt);
                         return hooks.afterThrow(
                             ctxt,
+                            compiledSymbol,
                             advicesReg[PointcutPhase.AFTERTHROW] as Advice<T, A, PointcutPhase.AFTERTHROW>[],
                         );
                     } finally {
                         delete ctxt.error;
                         hooks.preAfter?.call(hooks, ctxt);
-                        hooks.after(ctxt, advicesReg[PointcutPhase.AFTER] as Advice<T, A, PointcutPhase.AFTER>[]);
+                        hooks.after(
+                            ctxt,
+                            compiledSymbol,
+                            advicesReg[PointcutPhase.AFTER] as Advice<T, A, PointcutPhase.AFTER>[],
+                        );
                         ctxt.joinpoint = restoreJp;
                         ctxt.args = restoreArgs;
                     }
                 });
 
                 hooks.preAround?.call(hooks, ctxt);
-                return hooks.around(
+
+                const res = hooks.around(
                     ctxt,
+                    compiledSymbol,
                     advicesReg[PointcutPhase.AROUND] as Advice<T, A, PointcutPhase.AROUND>[],
                     jp,
                 )(args);
+
+                ctxt.instance = restoreInstance;
+                ctxt.args = restoreArgs;
+                return res;
             };
 
             return hooks.finalize.call(hooks, ctxt, jp) ?? jp;

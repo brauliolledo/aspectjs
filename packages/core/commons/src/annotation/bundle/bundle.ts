@@ -1,6 +1,7 @@
 import { isString, locator } from '@aspectjs/core/utils';
+import { assert } from 'console';
 import { Annotation, AnnotationRef, AnnotationType } from '../annotation.types';
-import { AnnotationContext } from '../context/annotation.context';
+import { AnnotationContext, ValuedAnnotationContext, _AnnotationContextImpl } from '../context/annotation.context';
 import {
     AnnotationLocation,
     ClassAnnotationLocation,
@@ -10,6 +11,7 @@ import {
 } from '../location/annotation-location';
 import { AnnotationLocationFactory } from '../location/location.factory';
 import { AnnotationTarget } from '../target/annotation-target';
+import { RuntimeTargetContext, _AnnotationLocationImpl } from '../target/annotation-target.factory';
 
 /**
  * @public
@@ -130,18 +132,28 @@ export class RootAnnotationsBundle {
  */
 export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     private _target: AnnotationTarget;
-    constructor(registry: AnnotationBundleRegistry, location: AnnotationLocation, private searchParents: boolean) {
+    private _runtimeContext: RuntimeTargetContext<T>;
+
+    constructor(registry: AnnotationBundleRegistry, location: AnnotationLocation<T>, private searchParents: boolean) {
         super(registry);
-        this._target = AnnotationLocationFactory.getTarget(location);
+        if (!location) {
+            this._target = undefined;
+        } else {
+            const locationProto = _AnnotationLocationImpl.unwrap(location);
+            this._target = locationProto.getTarget();
+            if (locationProto.isBound()) {
+                this._runtimeContext = locationProto.getRuntimeContext();
+            }
+        }
     }
     all(...annotations: (Annotation | string | AnnotationRef)[]): readonly AnnotationContext<T>[] {
-        return this._allWithFilter(this._target, 'all', annotations) as AnnotationContext<T>[];
+        return this._findAnnotationContexts(this._target, 'all', annotations) as AnnotationContext<T>[];
     }
 
     onClass(
         ...annotations: (Annotation<AnnotationType.CLASS> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.CLASS>[] {
-        return this._allWithFilter(this._target, AnnotationType.CLASS, annotations) as AnnotationContext<
+        return this._findAnnotationContexts(this._target, AnnotationType.CLASS, annotations) as AnnotationContext<
             T,
             AnnotationType.CLASS
         >[];
@@ -150,7 +162,7 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     onSelf(
         ...annotations: (Annotation<AnnotationType.CLASS> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.CLASS>[] {
-        return this._allWithFilter(this._target, this._target.type, annotations) as AnnotationContext<
+        return this._findAnnotationContexts(this._target, this._target.type, annotations) as AnnotationContext<
             T,
             AnnotationType.CLASS
         >[];
@@ -159,7 +171,7 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     onProperty(
         ...annotations: (Annotation<AnnotationType.PROPERTY> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PROPERTY>[] {
-        return this._allWithFilter(this._target, AnnotationType.PROPERTY, annotations) as AnnotationContext<
+        return this._findAnnotationContexts(this._target, AnnotationType.PROPERTY, annotations) as AnnotationContext<
             T,
             AnnotationType.PROPERTY
         >[];
@@ -167,7 +179,7 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     onMethod(
         ...annotations: (Annotation<AnnotationType.METHOD> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.METHOD>[] {
-        return this._allWithFilter(this._target, AnnotationType.METHOD, annotations) as AnnotationContext<
+        return this._findAnnotationContexts(this._target, AnnotationType.METHOD, annotations) as AnnotationContext<
             T,
             AnnotationType.METHOD
         >[];
@@ -175,13 +187,13 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     onParameter(
         ...annotations: (Annotation<AnnotationType.PARAMETER> | string | AnnotationRef)[]
     ): readonly AnnotationContext<T, AnnotationType.PARAMETER>[] {
-        return this._allWithFilter(this._target, AnnotationType.PARAMETER, annotations) as AnnotationContext<
+        return this._findAnnotationContexts(this._target, AnnotationType.PARAMETER, annotations) as AnnotationContext<
             T,
             AnnotationType.PARAMETER
         >[];
     }
 
-    private _allWithFilter(
+    protected _findAnnotationContexts(
         target: AnnotationTarget,
         filter: keyof Filters[AnnotationType],
         annotations: (Annotation | string | AnnotationRef)[],
@@ -192,7 +204,7 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
 
         const parentContext: AnnotationContext[] =
             target.parentClass && this.searchParents
-                ? this._allWithFilter(target.parentClass, filter, annotations)
+                ? this._findAnnotationContexts(target.parentClass, filter, annotations)
                 : [];
         const reg = locator(this._registry.byTargetClassRef).at(target.declaringClass.ref).get();
 
@@ -213,10 +225,26 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
         }
         contexts = contexts.filter((a) => FILTERS[target.type][filter](target, a)) as AnnotationContext<T>[];
 
-        return [...parentContext, ...contexts] as AnnotationContext<T>[];
+        contexts = [...parentContext, ...contexts];
+        if (this._runtimeContext) {
+            contexts = contexts.map((c) =>
+                (c as _AnnotationContextImpl<T>).withValue(() => {
+                    if (target.type === AnnotationType.CLASS) {
+                        return this._runtimeContext.instance;
+                    } else if (target.type === AnnotationType.METHOD || target.type === AnnotationType.PROPERTY) {
+                        return (this._runtimeContext.instance as any)[target.propertyKey];
+                    } else {
+                        assert(target.type === AnnotationType.PARAMETER);
+                        return this._runtimeContext.args[this._target.parameterIndex];
+                    }
+                }),
+            );
+        }
+
+        return contexts as AnnotationContext<T>[];
     }
 }
-//
+
 // const b: RootAnnotationsBundle = undefined;
 //
 // const o = { attr: '', method() {} };

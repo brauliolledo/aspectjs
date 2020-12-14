@@ -55,9 +55,9 @@ export class _PropertyGetWeavingStrategy<T> extends _GenericWeavingStrategy<T, A
         let advice: CompileAdvice<T, AdviceType.PROPERTY>;
         let newDescriptor: PropertyDescriptor = ctxt.target.descriptor;
 
-        advices.forEach((advice) => {
-            ctxt.advice = advice;
-            newDescriptor = advice(ctxt) ?? newDescriptor;
+        advices.forEach((a) => {
+            ctxt.advice = a;
+            newDescriptor = a(ctxt) ?? newDescriptor;
         });
         delete ctxt.advice;
 
@@ -100,9 +100,9 @@ export class _PropertyGetWeavingStrategy<T> extends _GenericWeavingStrategy<T, A
         ctxt.args = [];
     }
 
-    initialJoinpoint(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>, originalDescriptor: PropertyDescriptor): void {
+    initialJoinpoint(ctxt: MutableAdviceContext<T, AdviceType.PROPERTY>, originalDescriptor: PropertyDescriptor): any {
         assert(isFunction(originalDescriptor.get));
-        ctxt.value = _JoinpointFactory.create(null, ctxt, originalDescriptor.get)();
+        return (ctxt.value = _JoinpointFactory.create(null, ctxt, originalDescriptor.get)());
     }
 
     finalize(

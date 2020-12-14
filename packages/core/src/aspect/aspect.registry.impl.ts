@@ -1,20 +1,21 @@
 import { After, AfterReturn, AfterThrow, Around, Before, Compile, Order } from '@aspectjs/core/annotations';
 import {
-    _AdviceFactory,
-    _getWeaverContext,
     Advice,
     AdvicesFilter,
     AdvicesRegistry,
     AdviceTarget,
     AdviceType,
     AnnotationContext,
-    AnnotationLocationFactory,
+    AnnotationRef,
     AspectsRegistry,
     AspectType,
     Pointcut,
     PointcutExpression,
     PointcutPhase,
     WeaverContext,
+    _AdviceFactory,
+    _AnnotationLocationImpl,
+    _getWeaverContext,
 } from '@aspectjs/core/commons';
 import { assert, assertIsAspect, locator } from '@aspectjs/core/utils';
 
@@ -63,7 +64,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                 [AfterReturn, PointcutPhase.AFTERRETURN],
                 [AfterThrow, PointcutPhase.AFTERTHROW],
             ].forEach((adviceDef) => {
-                bundle.onMethod(adviceDef[0]).forEach((annotation) => {
+                bundle.onMethod(adviceDef[0] as AnnotationRef).forEach((annotation) => {
                     const expr = annotation.args[0] as PointcutExpression;
                     assert(!!expr);
 
@@ -130,6 +131,9 @@ export class AspectsRegistryImpl implements AspectsRegistry {
 
         (phases ?? []).forEach((phase) => {
             if (!targetRegistry[phase]) {
+                // after, afetrReturn & afterThrow advices precedence is higher first
+                const orderFactor = phase > PointcutPhase.AROUND ? -1 : 1;
+
                 let advices = annotationContexts
                     .map((annotationContext) =>
                         locator(this._advicesRegistry)
@@ -145,9 +149,9 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                         // sort by advice order
                         const a = this._weaverContext.annotations;
                         const o1 = a.bundle.at(a.location.of(a1.aspect as any)[a1.name]).onMethod(Order)[0]?.args[0];
-                        const o2 = a.bundle.at(a.location.of(a2.aspect as any)[a1.name]).onMethod(Order)[0]?.args[0];
+                        const o2 = a.bundle.at(a.location.of(a2.aspect as any)[a2.name]).onMethod(Order)[0]?.args[0];
 
-                        return _compareOrder(o1, o2);
+                        return orderFactor * _compareOrder(o1, o2);
                     });
 
                 if (filter) {
@@ -162,7 +166,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
      * @internal
      */
     private _getTarget<T>(obj: T): AdviceTarget<T> {
-        return AnnotationLocationFactory.getTarget(this._weaverContext.annotations.location.of(obj));
+        return _AnnotationLocationImpl.unwrap(this._weaverContext.annotations.location.of(obj)).getTarget();
     }
 
     /**

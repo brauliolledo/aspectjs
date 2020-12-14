@@ -25,11 +25,12 @@ export function setupTestingWeaverContext(...aspects: AspectType[]): WeaverConte
     return context;
 }
 
+const af = new AnnotationFactory('tests');
 /**
  * Dummy annotation useful for tests
  * @public
  */
-export const AClass = new AnnotationFactory('tests').create(function AClass(): ClassDecorator {
+export const AClass = af.create(function AClass(): ClassDecorator {
     return;
 });
 
@@ -37,7 +38,7 @@ export const AClass = new AnnotationFactory('tests').create(function AClass(): C
  * Dummy annotation useful for tests
  * @public
  */
-export const BClass = new AnnotationFactory('tests').create(function BClass(): ClassDecorator {
+export const BClass = af.create(function BClass(): ClassDecorator {
     return;
 });
 
@@ -45,7 +46,7 @@ export const BClass = new AnnotationFactory('tests').create(function BClass(): C
  * Dummy annotation useful for tests
  * @public
  */
-export const CClass = new AnnotationFactory('tests').create(function CClass(): ClassDecorator {
+export const CClass = af.create(function CClass(): ClassDecorator {
     return;
 });
 
@@ -53,7 +54,7 @@ export const CClass = new AnnotationFactory('tests').create(function CClass(): C
  * Dummy annotation useful for tests
  * @public
  */
-export const DClass = new AnnotationFactory('tests').create(function DClass(): ClassDecorator {
+export const DClass = af.create(function DClass(): ClassDecorator {
     return;
 });
 
@@ -61,7 +62,7 @@ export const DClass = new AnnotationFactory('tests').create(function DClass(): C
  * Dummy annotation useful for tests
  * @public
  */
-export const XClass = new AnnotationFactory('tests').create(function XClass(): ClassDecorator {
+export const XClass = af.create(function XClass(): ClassDecorator {
     return;
 });
 
@@ -69,7 +70,7 @@ export const XClass = new AnnotationFactory('tests').create(function XClass(): C
  * Dummy annotation useful for tests
  * @public
  */
-export const AProperty = new AnnotationFactory('tests').create(function AProperty(): PropertyDecorator {
+export const AProperty = af.create(function AProperty(): PropertyDecorator {
     return;
 });
 
@@ -77,7 +78,7 @@ export const AProperty = new AnnotationFactory('tests').create(function APropert
  * Dummy annotation useful for tests
  * @public
  */
-export const BProperty = new AnnotationFactory('tests').create(function BProperty(): PropertyDecorator {
+export const BProperty = af.create(function BProperty(): PropertyDecorator {
     return;
 });
 
@@ -85,7 +86,7 @@ export const BProperty = new AnnotationFactory('tests').create(function BPropert
  * Dummy annotation useful for tests
  * @public
  */
-export const CProperty = new AnnotationFactory('tests').create(function CProperty(): PropertyDecorator {
+export const CProperty = af.create(function CProperty(): PropertyDecorator {
     return;
 });
 
@@ -93,7 +94,7 @@ export const CProperty = new AnnotationFactory('tests').create(function CPropert
  * Dummy annotation useful for tests
  * @public
  */
-export const DProperty = new AnnotationFactory('tests').create(function DProperty(): PropertyDecorator {
+export const DProperty = af.create(function DProperty(): PropertyDecorator {
     return;
 });
 
@@ -101,7 +102,7 @@ export const DProperty = new AnnotationFactory('tests').create(function DPropert
  * Dummy annotation useful for tests
  * @public
  */
-export const XProperty = new AnnotationFactory('tests').create(function XProperty(): PropertyDecorator {
+export const XProperty = af.create(function XProperty(): PropertyDecorator {
     return;
 });
 
@@ -109,7 +110,7 @@ export const XProperty = new AnnotationFactory('tests').create(function XPropert
  * Dummy annotation useful for tests
  * @public
  */
-export const AMethod = new AnnotationFactory('tests').create(function AMethod(): MethodDecorator {
+export const AMethod = af.create(function AMethod(): MethodDecorator {
     return;
 });
 
@@ -117,7 +118,7 @@ export const AMethod = new AnnotationFactory('tests').create(function AMethod():
  * Dummy annotation useful for tests
  * @public
  */
-export const BMethod = new AnnotationFactory('tests').create(function BMethod(): MethodDecorator {
+export const BMethod = af.create(function BMethod(): MethodDecorator {
     return;
 });
 
@@ -125,7 +126,7 @@ export const BMethod = new AnnotationFactory('tests').create(function BMethod():
  * Dummy annotation useful for tests
  * @public
  */
-export const CMethod = new AnnotationFactory('tests').create(function CMethod(): MethodDecorator {
+export const CMethod = af.create(function CMethod(): MethodDecorator {
     return;
 });
 
@@ -133,7 +134,7 @@ export const CMethod = new AnnotationFactory('tests').create(function CMethod():
  * Dummy annotation useful for tests
  * @public
  */
-export const DMethod = new AnnotationFactory('tests').create(function DMethod(): MethodDecorator {
+export const DMethod = af.create(function DMethod(): MethodDecorator {
     return;
 });
 
@@ -141,7 +142,7 @@ export const DMethod = new AnnotationFactory('tests').create(function DMethod():
  * Dummy annotation useful for tests
  * @public
  */
-export const XMethod = new AnnotationFactory('tests').create(function XMethod(): MethodDecorator {
+export const XMethod = af.create(function XMethod(): MethodDecorator {
     return;
 });
 
@@ -149,9 +150,7 @@ export const XMethod = new AnnotationFactory('tests').create(function XMethod():
  * Dummy annotation useful for tests
  * @public
  */
-export const AParameter = new AnnotationFactory('tests').create(function AParameter(
-    ...args: any[]
-): ParameterDecorator {
+export const AParameter = af.create(function AParameter(...args: any[]): ParameterDecorator {
     return;
 });
 
@@ -159,9 +158,7 @@ export const AParameter = new AnnotationFactory('tests').create(function AParame
  * Dummy annotation useful for tests
  * @public
  */
-export const BParameter = new AnnotationFactory('tests').create(function BParameter(
-    ...args: any[]
-): ParameterDecorator {
+export const BParameter = af.create(function BParameter(...args: any[]): ParameterDecorator {
     return;
 });
 
@@ -169,9 +166,7 @@ export const BParameter = new AnnotationFactory('tests').create(function BParame
  * Dummy annotation useful for tests
  * @public
  */
-export const CParameter = new AnnotationFactory('tests').create(function CParameter(
-    ...args: any[]
-): ParameterDecorator {
+export const CParameter = af.create(function CParameter(...args: any[]): ParameterDecorator {
     return;
 });
 
@@ -179,9 +174,7 @@ export const CParameter = new AnnotationFactory('tests').create(function CParame
  * Dummy annotation useful for tests
  * @public
  */
-export const DParameter = new AnnotationFactory('tests').create(function DParameter(
-    ...args: any[]
-): ParameterDecorator {
+export const DParameter = af.create(function DParameter(...args: any[]): ParameterDecorator {
     return;
 });
 
@@ -189,8 +182,6 @@ export const DParameter = new AnnotationFactory('tests').create(function DParame
  * Dummy annotation useful for tests
  * @public
  */
-export const XParameter = new AnnotationFactory('tests').create(function XParameter(
-    ...args: any[]
-): ParameterDecorator {
+export const XParameter = af.create(function XParameter(...args: any[]): ParameterDecorator {
     return;
 });

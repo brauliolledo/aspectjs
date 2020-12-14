@@ -12,6 +12,7 @@ import {
 } from '@aspectjs/core/commons';
 import { _getReferenceConstructor, _setReferenceConstructor, assert, isUndefined, Mutable } from '@aspectjs/core/utils';
 import { _defineFunctionProperties } from '../../utils';
+import { _CompiledSymbol } from '../../weaving-strategy';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 
 /**
@@ -46,10 +47,11 @@ export class _ClassWeavingStrategy<T> extends _GenericWeavingStrategy<T, AdviceT
 
     around(
         ctxt: Mutable<AroundContext<T, AdviceType.CLASS>>,
+        _compiledSymbol: _CompiledSymbol<T, AdviceType.CLASS>,
         advices: AroundAdvice<T, AdviceType.CLASS>[],
         joinpoint: JoinPoint<T>,
     ): (args?: any[]) => any {
-        advices.reverse().forEach((advice) => {
+        [...advices].reverse().forEach((advice) => {
             const originalJp = joinpoint;
             const nextJp = _JoinpointFactory.create(advice, ctxt, (...args: unknown[]) => originalJp(args));
             joinpoint = (args: any[]) => {
@@ -72,6 +74,7 @@ export class _ClassWeavingStrategy<T> extends _GenericWeavingStrategy<T, AdviceT
 
     afterReturn<T>(
         ctxt: MutableAdviceContext<T, AdviceType.CLASS>,
+        _compiledSymbol: _CompiledSymbol<T, AdviceType.CLASS>,
         advices: AfterReturnAdvice<T, AdviceType.CLASS>[],
     ): T {
         let newInstance = ctxt.instance;
@@ -95,7 +98,11 @@ export class _ClassWeavingStrategy<T> extends _GenericWeavingStrategy<T, AdviceT
         ctxt.instance = this.originalInstance;
     }
 
-    afterThrow(ctxt: MutableAdviceContext<T, AdviceType.CLASS>, advices: AfterThrowAdvice<T, AdviceType.CLASS>[]): T {
+    afterThrow(
+        ctxt: MutableAdviceContext<T, AdviceType.CLASS>,
+        _compiledSymbol: _CompiledSymbol<T, AdviceType.CLASS>,
+        advices: AfterThrowAdvice<T, AdviceType.CLASS>[],
+    ): T {
         if (!advices.length) {
             // pass-trough errors by default
             throw ctxt.error;
