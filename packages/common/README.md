@@ -1,0 +1,107 @@
+# AspectJS
+
+> The AOP framework for Javascript, Typescript, Browser & Node
+
+![logo]
+
+[![ci-status]](https://gitlab.com/Pryum/aspectjs)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
+## Abstract
+
+Inspired by the [AspectJ](https://www.eclipse.org/aspectj/) java framework,
+AspectJS Leverages [ES Decorators](https://github.com/tc39/proposal-decorators) to bring
+aspect-oriented programming to Javascript and Typescript.
+
+For more details & usage, please [read the documentation](https://nicolasthierion.github.io/aspectjs/)
+
+### Installation:
+
+```bash
+yarn add @aspectjs/core
+## install polyfills if needed
+yarn add reflect-metadata
+```
+
+Or with npm:
+
+```bash
+npm install --save @aspectjs/core
+## install polyfills if needed
+npm install --save reflect-metadata
+```
+
+### Example
+
+```javascript
+import { AnnotationFactory, BeforeContext, on, AnnotationType } from '@aspectjs/core/commons';
+import { Aspect, Before, Order } from '@aspectjs/core/annotations';
+import { WEAVER } from '@aspectjs/core';
+
+// Define the annotation
+const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message) {});
+
+// Create an aspect to enhance the @Deprecated annotation
+@Aspect()
+class DeprecatedAspect {
+    tags = {};
+
+    @Before(on.method.withAnnotations(Deprecated)) // before @Deprecated methods
+    @Before(on.parameter.withAnnotations(Deprecated)) // before methods with @Deprecated parameters
+    @Order(1) // optional: give the execution precedence. Lower order = Higher precedence
+    logWarning(context) {
+        // context gets injected with some data relative to the current advice
+        // get the unique target reference (ie: where the annotation is)
+        const targetRef = context.target.ref;
+        // if log warning not already raised for this target
+        if (!this.tags[targetRef]) {
+            if (
+                // log any deprecated method call
+                context.target.type === AnnotationType.METHOD ||
+                // log any method call with a non-undefined deprecated parameter.
+                context.args[context.target.parameterIndex] !== undefined
+            ) {
+                // get the message provided to @Deprecated, if any
+                const message = context.annotations.onSelf(Deprecated)[0].args[0];
+                // log a warning with either the provided message or a default one
+                console.warn(message || `${context.target.label} is deprecated`);
+                // warning raised, don't produce further warnings for this target
+                this.tags[context.target.ref] = true;
+            }
+        }
+    }
+}
+
+// Enable DeprecatedAspect
+WEAVER.enable(new DeprecatedAspect());
+
+// Use the aspect
+(function main() {
+    class Greetings {
+        sayHello(@Deprecated('parameter name is deprecated') name) {
+            console.log('Hello world');
+        }
+        @Deprecated()
+        sayGoodbye() {
+            console.log('Goodbye world');
+        }
+    }
+
+    g.sayHello('WORLD'); // will log "parameter name is deprecated" once on console
+    g.sayGoodbye();
+
+    g.sayHello('WORLD'); // will log "method "Greetings.sayGoodbye" is deprecated" once on console
+    g.sayGoodbye();
+})();
+```
+
+[run on StackBlitz](https://stackblitz.com/edit/typescript-gdvy3k?devtoolsheight=33&file=index.ts)
+
+## Projects of the AspectJS family:
+
+-   [`@aspectjs/memo`](https://www.npmjs.com/package/@aspectjs/memo)
+
+MIT Licensed
+
+[ci-status]: https://gitlab.com/Pryum/aspectjs/badges/master/pipeline.svg
+[logo]: .README/aspectjs-256.png

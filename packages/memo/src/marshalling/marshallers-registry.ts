@@ -1,4 +1,4 @@
-import { assert, isArray, isObject } from '@aspectjs/core/utils';
+import { assert, isArray, isObject } from '@aspectjs/common/utils';
 import { MemoFrame } from '../drivers';
 import { InstantPromise } from '../utils';
 import { MemoMarshaller } from './marshallers';

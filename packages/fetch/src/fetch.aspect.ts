@@ -19,7 +19,6 @@ import {
     Put,
     QueryParam,
 } from '@aspectjs/fetch/annotations';
-import { assert } from 'console';
 import { FetchAspectOptions } from 'fetch/annotations/src/types';
 
 type PathParamTemplate = {

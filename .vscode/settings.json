@@ -5,6 +5,9 @@
     "javascript.implicitProjectConfig.experimentalDecorators": true,
     "cSpell.words": [
         "Joinpoint",
-        "aspectjs"
+        "aspectjs",
+        "fesm",
+        "pointcut",
+        "tsbuildinfo"
     ]
 }

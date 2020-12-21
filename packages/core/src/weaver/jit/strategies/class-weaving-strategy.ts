@@ -10,7 +10,13 @@ import {
     JoinPoint,
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
-import { _getReferenceConstructor, _setReferenceConstructor, assert, isUndefined, Mutable } from '@aspectjs/core/utils';
+import {
+    _getReferenceConstructor,
+    _setReferenceConstructor,
+    assert,
+    isUndefined,
+    Mutable,
+} from '@aspectjs/common/utils';
 import { _defineFunctionProperties } from '../../utils';
 import { _CompiledSymbol } from '../../weaving-strategy';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';

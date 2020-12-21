@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/dist",
+    "**/rollup.config.ts"
+  ],
+
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "./utils" }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "@aspectjs/reflect",
+  "version": "0.1.4",
+  "description": "Reflection API for AspectJS",
+  "keywords": [
+    "aspectjs",
+    "reflect",
+    "annotations"
+  ],
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
+  "license": "MIT",
+  "main": "dist/bundles/reflect.umd.js",
+  "unpkg": "dist/bundles/reflect.umd.min.js",
+  "module": "dist/fesm2015/reflect.js",
+  "fesm2015": "dist/fesm2015/reflect.js",
+  "esm2015": "dist/esm2015/public_api.js",
+  "sideEffects": false,
+  "typings": "dist/reflect.d.ts",
+  "scripts": {
+    "build": "tsc -b -v && tsc -b -v testing && rollup --config ./rollup.config.js",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose",
+    "test": "nyc jasmine --config=jasmine.json",
+    "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
+    "size": "size-limit",
+    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
+  },
+  "files": [
+    ".README",
+    "dist/bundles",
+    "dist/esm2015",
+    "dist/fesm2015",
+    "*/package.json",
+    "reflect.d.ts",
+    "reflect-testing.d.ts"
+  ],
+  "directories": {
+    "lib": "src",
+    "dist": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  },
+  "size-limit": [
+    {
+      "limit": "200 ms",
+      "path": [
+        "dist/bundles/reflect.umd.min.js"
+      ]
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

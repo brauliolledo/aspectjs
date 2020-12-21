@@ -240,10 +240,12 @@ function _baseUmd(project: Project, distFile: string, options: RollupOptions): R
                 sourcemap: true,
                 esModule: false,
                 globals: {
+                    '@aspectjs/common': 'aspectjs.common',
+                    '@aspectjs/common/utils': 'aspectjs.common_utils',
+                    '@aspectjs/weaver': 'aspectjs.weaver',
+                    '@aspectjs/reflect': 'aspectjs.reflect',
                     '@aspectjs/core': 'aspectjs.core',
-                    '@aspectjs/core/commons': 'aspectjs.core_commons',
                     '@aspectjs/core/annotations': 'aspectjs.core_annotations',
-                    '@aspectjs/core/utils': 'aspectjs.core_utils',
                 },
             },
             plugins: [

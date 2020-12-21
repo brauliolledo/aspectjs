@@ -1,4 +1,4 @@
-import { isString, setAspectOptions, AspectOptions } from '@aspectjs/core/utils';
+import { isString, setAspectOptions, AspectOptions } from '@aspectjs/common/utils';
 import { AnnotationRef, ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/core/commons';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved

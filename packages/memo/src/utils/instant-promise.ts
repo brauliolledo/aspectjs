@@ -1,7 +1,7 @@
 /**
  * Like Promise.resolve, but call resolve synchronously as soon as '.then' gets called
  */
-import { isPromise } from '@aspectjs/core/utils';
+import { isPromise } from '@aspectjs/common/utils';
 
 export class InstantPromise<T> implements PromiseLike<T> {
     private _resolved: boolean;

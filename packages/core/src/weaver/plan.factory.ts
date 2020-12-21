@@ -10,7 +10,7 @@ import {
     WeaverContext,
     WeavingError,
 } from '@aspectjs/core/commons';
-import { assert } from '@aspectjs/core/utils';
+import { assert } from '@aspectjs/common/utils';
 import { _WeavingStrategy } from './weaving-strategy';
 
 /**

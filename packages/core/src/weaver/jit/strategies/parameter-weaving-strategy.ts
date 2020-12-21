@@ -1,5 +1,5 @@
 import { AnnotationType, CompileAdvice, MutableAdviceContext } from '@aspectjs/core/commons';
-import { getOrComputeMetadata } from '@aspectjs/core/utils';
+import { getOrComputeMetadata } from '@aspectjs/common/utils';
 import { _MethodWeavingStrategy } from './method-weaving-strategy';
 
 const _defineProperty = Object.defineProperty;

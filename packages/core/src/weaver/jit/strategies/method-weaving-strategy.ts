@@ -6,7 +6,7 @@ import {
     JoinPoint,
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
-import { getOrComputeMetadata, isFunction, isUndefined } from '@aspectjs/core/utils';
+import { getOrComputeMetadata, isFunction, isUndefined } from '@aspectjs/common/utils';
 import { _defineFunctionProperties } from '../../utils';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 

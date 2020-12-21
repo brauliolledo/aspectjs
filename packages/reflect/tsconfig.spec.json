@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "testing/**/*.ts",
+    "public_api.ts",
+    "**/*.spec.ts"
+  ],
+  "exclude": [
+    "dist",
+    "rollup.config.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "module": "commonjs"
+  },
+  "references": [
+    { "path": "../common" },
+    { "path": "./testing" },
+  ]
+
+}

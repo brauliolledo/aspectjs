@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "node_modules/@types/node/globals.d.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/dist",
+    "**/rollup.config.ts"
+  ],
+
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "experimentalDecorators": true
+  },
+  "references": [
+    { "path": "./commons" },
+    { "path": "./annotations" },
+    { "path": "./utils" }
+  ]
+}

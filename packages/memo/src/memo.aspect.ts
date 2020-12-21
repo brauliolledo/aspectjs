@@ -1,6 +1,6 @@
 import { Around, Aspect } from '@aspectjs/core/annotations';
 import { AroundContext, AspectError, AspectType, BeforeContext, JoinPoint, on } from '@aspectjs/core/commons';
-import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } from '@aspectjs/core/utils';
+import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } from '@aspectjs/common/utils';
 import copy from 'fast-copy';
 
 import { stringify } from 'flatted';

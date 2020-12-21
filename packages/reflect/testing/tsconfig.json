@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "exclude": [
+    "dist"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts", "../src/context/reflect-context.impl.ts"
+  ],
+  "references": [
+    { "path": "../" },
+  ]
+}

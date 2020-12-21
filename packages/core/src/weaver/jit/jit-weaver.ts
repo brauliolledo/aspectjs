@@ -15,7 +15,7 @@ import {
     WeavingError,
     _AnnotationLocationImpl,
 } from '@aspectjs/core/commons';
-import { isFunction } from '@aspectjs/core/utils';
+import { isFunction } from '@aspectjs/common/utils';
 import { _AdviceExecutionPlanFactory } from '../plan.factory';
 import { _ClassWeavingStrategy } from './strategies/class-weaving-strategy';
 import { _MethodWeavingStrategy } from './strategies/method-weaving-strategy';

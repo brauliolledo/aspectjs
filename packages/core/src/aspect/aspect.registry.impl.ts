@@ -17,7 +17,7 @@ import {
     _AnnotationLocationImpl,
     _getWeaverContext,
 } from '@aspectjs/core/commons';
-import { assert, assertIsAspect, locator } from '@aspectjs/core/utils';
+import { assert, assertIsAspect, locator } from '@aspectjs/common/utils';
 
 /**
  * Stores the aspects along with their advices.

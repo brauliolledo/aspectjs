@@ -43,7 +43,6 @@
   ],
   "directories": {
     "lib": "src",
-    "test": "internals/testing",
     "dist": "dist"
   },
   "repository": {

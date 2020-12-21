@@ -4,7 +4,7 @@ console.log(`Using file ${process.env.TS_NODE_PROJECT}`);
 require('reflect-metadata');
 require('tsconfig-paths/register');
 require('ts-node/register');
-require('./packages/core/utils/src/utils').__setDebug(true);
+require('./packages/common/utils/src/utils').__setDebug(true);
 
 // needed for memo
 localStorage = require('localstorage-ponyfill').createLocalStorage();

@@ -1,4 +1,4 @@
-import { isUndefined } from '@aspectjs/core/utils';
+import { isUndefined } from '@aspectjs/common/utils';
 import { parse, stringify } from 'flatted';
 import { MemoEntry } from '../../../memo.types';
 import { MemoFrame } from '../../memo-frame';

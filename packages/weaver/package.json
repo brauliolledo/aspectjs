@@ -1,0 +1,62 @@
+{
+  "name": "@aspectjs/weaver",
+  "version": "0.1.4",
+  "description": "Reflexction API for AspectJS",
+  "keywords": [
+    "aspectjs",
+    "annotations"
+  ],
+  "author": "Nicolas Thierion <nicolas.thierion@outlook.com>",
+  "homepage": "https://nicolasthierion.github.io/aspectjs/#/",
+  "license": "MIT",
+  "main": "dist/bundles/weaver.umd.js",
+  "unpkg": "dist/bundles/weaver.umd.min.js",
+  "module": "dist/fesm2015/weaver.js",
+  "fesm2015": "dist/fesm2015/weaver.js",
+  "esm2015": "dist/esm2015/public_api.js",
+  "sideEffects": false,
+  "typings": "dist/weaver.d.ts",
+  "scripts": {
+    "build": "tsc -b -v && rollup --config ./rollup.config.js",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "typings": "api-extractor run --local --verbose",
+    "test": "nyc jasmine --config=jasmine.json",
+    "dev": "nodemon  --ignore **/dist/ --ext ts --exec 'npm run lint:auto && npm run test && npm run size'",
+    "size": "size-limit",
+    "lint:auto": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint -c ./.eslintrc.js --ignore-path .gitignore '**/*.{js,ts,tsx}' --quiet"
+  },
+  "files": [
+    ".README",
+    "dist/bundles",
+    "dist/esm2015",
+    "dist/fesm2015",
+    "*/package.json",
+    "weaver.d.ts"
+  ],
+  "directories": {
+    "lib": "src",
+    "dist": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicolasThierion/aspectjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NicolasThierion/aspectjs/issues"
+  },
+  "size-limit": [
+    {
+      "limit": "400 ms",
+      "path": [
+        "dist/bundles/core.umd.min.js",
+        "commons/dist/bundles/commons.umd.min.js",
+        "utils/dist/bundles/utils.umd.min.js",
+        "annotations/dist/bundles/annotations.umd.min.js"
+      ]
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

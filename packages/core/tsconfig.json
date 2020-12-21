@@ -13,12 +13,9 @@
 
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "dist",
-    "experimentalDecorators": true
+    "outDir": "dist"
   },
   "references": [
-    { "path": "./commons" },
     { "path": "./annotations" },
-    { "path": "./utils" }
   ]
 }

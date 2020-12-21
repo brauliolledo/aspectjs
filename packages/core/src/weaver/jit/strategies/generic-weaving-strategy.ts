@@ -13,7 +13,7 @@ import {
     MutableAdviceContext,
     _JoinpointFactory,
 } from '@aspectjs/core/commons';
-import { assert, isUndefined } from '@aspectjs/core/utils';
+import { assert, isUndefined } from '@aspectjs/common/utils';
 import { _CompiledSymbol, _WeavingStrategy } from '../../weaving-strategy';
 
 /**

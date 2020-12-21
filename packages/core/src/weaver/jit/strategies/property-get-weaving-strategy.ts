@@ -7,7 +7,7 @@ import {
     CompileAdvice,
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
-import { assert, getOrComputeMetadata, isFunction, isUndefined, Mutable } from '@aspectjs/core/utils';
+import { assert, getOrComputeMetadata, isFunction, isUndefined, Mutable } from '@aspectjs/common/utils';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 
 /**

@@ -9,7 +9,7 @@ import {
     JoinPoint,
     MutableAdviceContext,
 } from '@aspectjs/core/commons';
-import { assert, isFunction } from '@aspectjs/core/utils';
+import { assert, isFunction } from '@aspectjs/common/utils';
 import { _CompiledSymbol } from '../../weaving-strategy';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 import { _PropertyGetWeavingStrategy } from './property-get-weaving-strategy';
