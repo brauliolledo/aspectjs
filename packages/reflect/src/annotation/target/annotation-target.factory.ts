@@ -10,8 +10,11 @@ import {
     Mutable,
     _getReferenceConstructor,
 } from '@aspectjs/common/utils';
+import { _getReflectContext } from '../../../src/context/reflect.context';
+import { AnnotationLocation } from '../location/annotation-location';
 import {
     AdviceTarget,
+    AnnotationTarget,
     ClassAdviceTarget,
     MethodAdviceTarget,
     ParameterAdviceTarget,
@@ -109,9 +112,20 @@ function _metaKey(ref: string): string {
     return `@aspectjs::target:${ref}`;
 }
 
-class AnnotationTargetImpl {
+class AnnotationTargetImpl<T, A extends AnnotationType> {
+    _location: AnnotationLocation<T, A>;
     toString() {
         return ((this as any) as AdviceTarget<any, any>).label;
+    }
+
+    get location(): AnnotationLocation {
+        if (this._location) {
+            return this._location;
+        }
+
+        return (this._location = _getReflectContext().annotations.location.ofTarget(
+            (this as any) as AnnotationTarget<T, A>,
+        ) as any);
     }
 }
 
@@ -125,9 +139,7 @@ function _createClassAnnotationTarget<T, A extends AnnotationType.CLASS>(
     target: AnnotationTargetLike<T, A>,
     refGenerator: (d: Mutable<Partial<AdviceTarget>>) => string,
 ): AnnotationTargetLike<T, A> {
-    target = _createAnnotationTarget(target, AnnotationType.CLASS, ['proto'], refGenerator) as Mutable<
-        Partial<AdviceTarget<T, A>>
-    >;
+    target = _createAnnotationTarget(target, AnnotationType.CLASS, ['proto'], refGenerator);
     target.label = `class "${target.proto.constructor.name}"`;
     target.name = target.proto.constructor.name;
     target.declaringClass = target as any;
@@ -218,7 +230,7 @@ function _createAnnotationTarget<T, D extends AnnotationType>(
 
     target = { ...target };
 
-    // delete useleff properties
+    // delete useless properties
     Object.keys(target)
         .filter((p) => requiredProperties.indexOf(p as any) < 0)
         .forEach((n: keyof AnnotationTargetLike<T, D>) => delete target[n]);

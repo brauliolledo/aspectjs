@@ -1,7 +1,7 @@
-import { Advice, AnnotationsBundle } from '@aspectjs/core/commons';
-import { AdviceTarget } from '../../annotation/target/annotation-target';
-import { JoinPoint } from '../../types/types';
-import { AdviceType } from '../types';
+import { AnnotationsBundle, AdviceTarget } from '@aspectjs/reflect';
+import { Advice } from '../types';
+import { AdviceType } from '../../advice/advice.type';
+import { JoinPoint } from '../..//advice/joinpoint';
 
 /**
  * @public

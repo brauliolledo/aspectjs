@@ -1,20 +1,11 @@
 import { Aspect, Compile } from '@aspectjs/core/annotations';
-import {
-    AClass,
-    AMethod,
-    AParameter,
-    AProperty,
-    BClass,
-    BMethod,
-    BProperty,
-    Labeled,
-    setupTestingWeaverContext,
-} from '@aspectjs/core/testing';
-import { AnnotationContext } from '../../annotation/context/annotation.context';
-import { AdviceTarget } from '../../annotation/target/annotation-target';
-import { on } from '../../types';
-import { Weaver, WeavingError } from '../../weaver';
-import { AdviceContext, AdviceType, CompileContext } from '../types';
+import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BProperty, _Labeled } from '@root/testing';
+
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { AdviceType } from '../../advice/advice.type';
+import { AdviceTarget, AnnotationContext } from '@aspectjs/reflect/public_api';
+import { Weaver, WeavingError } from '@aspectjs/weaver';
+import { AdviceContext, CompileContext, on } from '../../..';
 
 let advice = jasmine.createSpy('compileAspectA');
 let compileAdviceB = jasmine.createSpy('compileAspectB');
@@ -26,7 +17,7 @@ describe('@Compile advice', () => {
     let weaver: Weaver;
 
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
     describe('applied on a class', () => {
         advice = jasmine.createSpy('compileAspectA');
@@ -35,7 +26,7 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class CompileAspectA {
-                @Compile(on.class.withAnnotations(AClass))
+                @Compile(on.class.withAnnotations(_AClass))
                 apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
                     return advice.bind(this)(ctxt);
                 }
@@ -44,7 +35,7 @@ describe('@Compile advice', () => {
 
             @Aspect('BClassLabel')
             class CompileAspectB {
-                @Compile(on.class.withAnnotations(BClass))
+                @Compile(on.class.withAnnotations(_BClass))
                 apply(ctxt: AdviceContext<any, AdviceType.CLASS>): any {
                     return compileAdviceB.bind(this)(ctxt);
                 }
@@ -64,21 +55,21 @@ describe('@Compile advice', () => {
             advice = jasmine.createSpy('advice').and.callFake(function () {
                 expect(this).toEqual(jasmine.any(aspectClass));
             });
-            @AClass()
+            @_AClass()
             class A {}
 
             expect(advice).toHaveBeenCalled();
         });
 
         it('should call the aspect upon compilation of annotated class', () => {
-            @AClass()
+            @_AClass()
             class A {}
 
             expect(advice).toHaveBeenCalled();
         });
 
         it('should pass annotation target', () => {
-            @AClass()
+            @_AClass()
             class A {}
 
             expect(target).toBeDefined();
@@ -86,7 +77,7 @@ describe('@Compile advice', () => {
         });
 
         it('should not pass context instance', () => {
-            @AClass()
+            @_AClass()
             class A {}
 
             expect(instance).toBeUndefined();
@@ -109,8 +100,8 @@ describe('@Compile advice', () => {
                     });
             });
             it('should use the new constructor', () => {
-                @AClass()
-                class A implements Labeled {
+                @_AClass()
+                class A implements _Labeled {
                     labels?: string[];
                 }
 
@@ -125,8 +116,8 @@ describe('@Compile advice', () => {
                 advice = jasmine.createSpy('compileAdvice');
             });
             it('should use the new constructor', () => {
-                @AClass()
-                class A implements Labeled {
+                @_AClass()
+                class A implements _Labeled {
                     labels?: string[];
                 }
 
@@ -137,8 +128,8 @@ describe('@Compile advice', () => {
 
         describe('when multiple @Compile are applied', () => {
             it('should call the two advices', () => {
-                @BClass()
-                @AClass()
+                @_BClass()
+                @_AClass()
                 class AB {}
 
                 new AB();
@@ -152,7 +143,7 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class CompileAspectA {
-                @Compile(on.property.withAnnotations(AProperty))
+                @Compile(on.property.withAnnotations(_AProperty))
                 apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
                     return advice.bind(this)(ctxt);
                 }
@@ -160,7 +151,7 @@ describe('@Compile advice', () => {
             aspectClass = CompileAspectA;
             @Aspect('BPropertyLabel')
             class CompileAspectB {
-                @Compile(on.property.withAnnotations(BProperty))
+                @Compile(on.property.withAnnotations(_BProperty))
                 apply(ctxt: AdviceContext<any, AdviceType.PROPERTY>): any {
                     return compileAdviceB.bind(this)(ctxt);
                 }
@@ -181,7 +172,7 @@ describe('@Compile advice', () => {
                 expect(this).toEqual(jasmine.any(aspectClass));
             });
             class A {
-                @AProperty()
+                @_AProperty()
                 labels: string[];
             }
 
@@ -190,7 +181,7 @@ describe('@Compile advice', () => {
 
         it('should call the aspect upon compilation of annotated property', () => {
             class A {
-                @AProperty()
+                @_AProperty()
                 labels: string[];
             }
             expect(advice).toHaveBeenCalled();
@@ -198,7 +189,7 @@ describe('@Compile advice', () => {
 
         it('should pass advice target', () => {
             class A {
-                @AProperty()
+                @_AProperty()
                 labels: string[];
             }
             expect(target).toBeDefined();
@@ -207,7 +198,7 @@ describe('@Compile advice', () => {
 
         it('should not pass context instance', () => {
             class A {
-                @AProperty()
+                @_AProperty()
                 labels: string[];
             }
             expect(instance).toBeUndefined();
@@ -224,7 +215,7 @@ describe('@Compile advice', () => {
                 it('should throw an error', () => {
                     expect(() => {
                         class X {
-                            @AProperty()
+                            @_AProperty()
                             labels: string[];
                         }
                     }).toThrow(new TypeError('Getter must be a function: '));
@@ -232,13 +223,13 @@ describe('@Compile advice', () => {
             });
 
             describe('that sets "value = any"', () => {
-                let a: Labeled;
+                let a: _Labeled;
                 beforeEach(() => {
                     advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
                         value: ['propAspect'],
                     }));
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         labels?: string[];
                     }
                     a = new A();
@@ -255,15 +246,15 @@ describe('@Compile advice', () => {
             });
 
             describe('that sets "get = () => any"', () => {
-                let a: Labeled;
+                let a: _Labeled;
 
                 beforeEach(() => {
                     advice = jasmine.createSpy('compileAdvice').and.callFake(() => ({
                         get: () => ['propAspect'],
                     }));
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         labels?: string[];
                     }
                     a = new A();
@@ -280,7 +271,7 @@ describe('@Compile advice', () => {
             });
 
             describe('that sets "get = () => any" along with set = () => any', () => {
-                let a: Labeled;
+                let a: _Labeled;
                 let val: string[];
                 beforeEach(() => {
                     val = ['propAspect'];
@@ -290,8 +281,8 @@ describe('@Compile advice', () => {
                         set: (_val: any) => (val = _val),
                     }));
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         labels?: string[];
                     }
 
@@ -325,8 +316,8 @@ describe('@Compile advice', () => {
         describe('when multiple @Compile are applied', () => {
             it('should call the two advices', () => {
                 class AB {
-                    @BProperty()
-                    @AProperty()
+                    @_BProperty()
+                    @_AProperty()
                     private prop: string;
                 }
 
@@ -342,12 +333,14 @@ describe('@Compile advice', () => {
             expect(() => {
                 @Aspect('BadAspect')
                 class BadAspect {
-                    @Compile(on.property.setter.withAnnotations(AProperty))
+                    @Compile(on.property.setter.withAnnotations(_AProperty))
                     apply() {}
                 }
                 weaver.enable(BadAspect);
             }).toThrow(
-                new WeavingError('@Compile(@AProperty) BadAspect.apply(): Advice cannot be applied on property setter'),
+                new WeavingError(
+                    'Error applying advice @Compile(@AProperty) BadAspect.apply() on method "BadAspect.apply": Advice cannot be applied on property setter',
+                ),
             );
         });
     });
@@ -358,23 +351,23 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect()
             class CompileAspectA {
-                @Compile(on.method.withAnnotations(AMethod))
-                compileMethod(ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
+                @Compile(on.method.withAnnotations(_AMethod))
+                compileMethod(ctxt: CompileContext<_Labeled, AdviceType.METHOD>) {
                     return advice(ctxt);
                 }
             }
 
             @Aspect()
             class CompileAspectB {
-                @Compile(on.method.withAnnotations(BMethod))
-                compileMethod(ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
+                @Compile(on.method.withAnnotations(_BMethod))
+                compileMethod(ctxt: CompileContext<_Labeled, AdviceType.METHOD>) {
                     return compileAdviceB(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.METHOD>) {
+                .and.callFake(function (ctxt: CompileContext<_Labeled, AdviceType.METHOD>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
                 });
@@ -384,7 +377,7 @@ describe('@Compile advice', () => {
 
         it('should call the aspect upon compilation of annotated method', () => {
             class A {
-                @AMethod()
+                @_AMethod()
                 addLabel(): void {}
             }
 
@@ -393,7 +386,7 @@ describe('@Compile advice', () => {
 
         it('should pass annotation target', () => {
             class A {
-                @AMethod()
+                @_AMethod()
                 addLabel(): void {}
             }
 
@@ -403,7 +396,7 @@ describe('@Compile advice', () => {
 
         it('should not pass context instance', () => {
             class A {
-                @AMethod()
+                @_AMethod()
                 addLabel(): void {}
             }
 
@@ -426,10 +419,10 @@ describe('@Compile advice', () => {
                         });
                 });
                 it('should use the new method descriptor', () => {
-                    class A implements Labeled {
+                    class A implements _Labeled {
                         labels: string[] = [];
 
-                        @AMethod()
+                        @_AMethod()
                         addLabel() {}
                     }
 
@@ -451,7 +444,7 @@ describe('@Compile advice', () => {
                 it('should throw an error', () => {
                     expect(() => {
                         class A {
-                            @AMethod()
+                            @_AMethod()
                             addLabel() {}
                         }
                     }).toThrow(
@@ -470,12 +463,12 @@ describe('@Compile advice', () => {
                 it('should throw an error', () => {
                     expect(() => {
                         class A {
-                            @AMethod()
+                            @_AMethod()
                             addLabel() {}
                         }
                     }).toThrow(
                         new WeavingError(
-                            '@Compile(@AMethod) CompileAspectA.compileMethod(): Expected advice to return a method descriptor. Got: undefined',
+                            'Error applying advice @Compile(@AMethod) CompileAspectA.compileMethod() on method "A.addLabel": Expected advice to return a method descriptor. Got: undefined',
                         ),
                     );
                 });
@@ -484,8 +477,8 @@ describe('@Compile advice', () => {
         describe('when multiple @Compile are applied', () => {
             it('should call the two advices', () => {
                 class AB {
-                    @BMethod()
-                    @AMethod()
+                    @_BMethod()
+                    @_AMethod()
                     private someMethod(ctxt: CompileContext): any {
                         return ctxt.target.descriptor;
                     }
@@ -504,18 +497,18 @@ describe('@Compile advice', () => {
         beforeEach(() => {
             @Aspect()
             class CompileAspect {
-                @Compile(on.parameter.withAnnotations(AParameter))
-                compileParameter(ctxt: CompileContext<Labeled, AdviceType.PARAMETER>) {
+                @Compile(on.parameter.withAnnotations(_AParameter))
+                compileParameter(ctxt: CompileContext<_Labeled, AdviceType.PARAMETER>) {
                     return advice(ctxt);
                 }
             }
 
             advice = jasmine
                 .createSpy('compileAdvice')
-                .and.callFake(function (ctxt: CompileContext<Labeled, AdviceType.PARAMETER>) {
+                .and.callFake(function (ctxt: CompileContext<_Labeled, AdviceType.PARAMETER>) {
                     target = ctxt.target;
                     instance = (ctxt as any).instance;
-                    annotation = ctxt.annotations.all(AParameter)[0];
+                    annotation = ctxt.annotations.all(_AParameter)[0];
                 });
 
             weaver.enable(new CompileAspect());
@@ -523,7 +516,7 @@ describe('@Compile advice', () => {
 
         it('should call the aspect upon compilation of annotated parameter', () => {
             class A {
-                addLabel(@AParameter() labels: string[]): void {}
+                addLabel(@_AParameter() labels: string[]): void {}
             }
 
             expect(advice).toHaveBeenCalled();
@@ -531,7 +524,7 @@ describe('@Compile advice', () => {
 
         it('should pass annotation target', () => {
             class A {
-                addLabel(@AParameter('parameterLabel') labels: string[]): void {}
+                addLabel(@_AParameter('parameterLabel') labels: string[]): void {}
             }
 
             expect(target).toBeDefined();
@@ -542,7 +535,7 @@ describe('@Compile advice', () => {
 
         it('should not pass context instance', () => {
             class A {
-                addLabel(@AParameter('parameterLabel') labels: string[]): void {}
+                addLabel(@_AParameter('parameterLabel') labels: string[]): void {}
             }
             expect(target).toBeDefined();
             expect(instance).toBeUndefined();

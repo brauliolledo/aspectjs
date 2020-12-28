@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts",
+    "../../../testing"
+  ],
+  "exclude": [
+    "dist",
+    "rollup.config.ts",
+  ],
+  "references": [
+    { "path": "../../common" },
+    { "path": "../" },
+    { "path": "../testing" },
+    { "path": "../../weaver" },
+    { "path": "../../weaver/testing" }
+  ]
+}

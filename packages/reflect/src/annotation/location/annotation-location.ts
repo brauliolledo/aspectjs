@@ -1,8 +1,4 @@
 import { AnnotationType } from '@aspectjs/common';
-import { assert } from '@aspectjs/common/utils';
-
-import { AnnotationTarget } from '../target/annotation-target';
-import { RuntimeTargetContext } from '../target/annotation-target.factory';
 
 /**
  * @public

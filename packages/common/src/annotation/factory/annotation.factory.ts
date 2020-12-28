@@ -12,11 +12,11 @@ import {
 
 let generatedId = 0;
 
-export type BootstrapDecoratorFactory = <A extends AnnotationType, S extends Annotation<AnnotationType>>(
-    annotation: Annotation<A>,
-    annotationStub: S,
-    annotationArgs: any[],
-) => Decorator | void;
+export type AnnotationBootstrapModule<A extends AnnotationType = any, S extends Annotation<AnnotationType> = any> = {
+    decorator: (annotation: Annotation<A>, annotationStub: S, annotationArgs: any[]) => Decorator | void;
+    order: number;
+    name: string;
+};
 
 /**
  * Factory to create some {@link Annotation}.
@@ -25,14 +25,23 @@ export type BootstrapDecoratorFactory = <A extends AnnotationType, S extends Ann
 export class AnnotationFactory {
     private readonly _groupId: string;
 
-    public static readonly bootstrapDecorators: Map<string, BootstrapDecoratorFactory> = new Map([
+    private static readonly _bootstrapConfigs: Map<string, AnnotationBootstrapModule> = new Map([
         [
             '@aspectjs::annotationStub',
-            (_annotation, annotationStub, annotationArgs) => {
-                return annotationStub(...annotationArgs);
+            {
+                name: '@aspectjs::annotationStub',
+                order: 0,
+                decorator: (_annotation, annotationStub, annotationArgs) => {
+                    return annotationStub(...annotationArgs);
+                },
             },
         ],
     ]);
+
+    static addBootstrapModule(bootstrapConfig: AnnotationBootstrapModule) {
+        assert(!!bootstrapConfig.name);
+        AnnotationFactory._bootstrapConfigs.set(bootstrapConfig.name, bootstrapConfig);
+    }
     constructor(groupId: string) {
         this._groupId = groupId;
     }
@@ -117,17 +126,42 @@ export class AnnotationFactory {
         if (!name) {
             name = `anonymousAnnotation#${generatedId++}`;
         }
-        // create the annotation (ie: decorator provider)
+        const _factory = this;
+
+        // create the annotation (ie: decorator factory)
         const annotation = _createAnnotation(
             name as string,
             groupId,
             annotationStub,
             function (...annotationArgs: any[]): Decorator {
-                return _createBootstrapDecorator(annotation as any, annotationStub, annotationArgs);
+                return _factory._createBootstrapDecorator(annotation as any, annotationStub, annotationArgs);
             },
         );
 
         return annotation;
+    }
+
+    _createBootstrapDecorator<A extends AnnotationType, S extends Annotation<AnnotationType>>(
+        annotation: Annotation<A>,
+        annotationStub: S,
+        annotationArgs: any[],
+    ): Decorator {
+        return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
+            return [...AnnotationFactory._bootstrapConfigs.values()]
+                .sort((c1, c2) => c1.order - c2.order)
+                .reduce((decoree, { name, decorator }) => {
+                    try {
+                        decoree =
+                            decorator
+                                .apply(this, [annotation, annotationStub, annotationArgs])
+                                ?.apply(this, targetArgs) ?? decoree;
+                        return decoree;
+                    } catch (e) {
+                        console.error(`Error applying bootstrap decorator ${name}: ${(e as Error).message}`);
+                        throw e;
+                    }
+                }, noopDecorator.apply(this, targetArgs));
+        };
     }
 }
 
@@ -149,43 +183,6 @@ function _createAnnotation<A extends Annotation<AnnotationType>, D extends Decor
     assert(Object.getOwnPropertySymbols(annotation).indexOf(Symbol.toPrimitive) >= 0);
 
     return annotation;
-}
-
-function _createBootstrapDecorator<A extends AnnotationType, S extends Annotation<AnnotationType>>(
-    annotation: Annotation<A>,
-    annotationStub: S,
-    annotationArgs: any[],
-): Decorator {
-    return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
-        return [...AnnotationFactory.bootstrapDecorators.entries()].reduce((decoree, [name, decorator]) => {
-            try {
-                decoree =
-                    decorator.apply(this, [annotation, annotationStub, annotationArgs])?.apply(this, targetArgs) ??
-                    decoree;
-                return decoree;
-            } catch (e) {
-                (e as Error).message = `Error applying bootstrap decorator ${name}: ${(e as Error).message}`;
-                throw e;
-            }
-        }, noopDecorator.apply(this, targetArgs));
-
-        // TODO move into bootstrapDecorators
-        // // assert the weaver is loaded before invoking the underlying decorator
-        // const weaverContext = _getWeaverContext();
-        // if (!weaverContext) {
-        //     throw new Error(
-        //         `Cannot invoke annotation ${annotation.name ?? ''} before "setWeaverContext()" has been called`,
-        //     );
-        // }
-        // const target = _getWeaverContext().annotations.targetFactory.of(targetArgs);
-        // const annotationContext = new _AnnotationContextImpl(target, annotationArgs, annotation);
-        // weaverContext.annotations.registry.register(annotationContext);
-        // const enhanced = weaverContext.getWeaver().enhance(target);
-        // if (target.type === AnnotationType.CLASS) {
-        //     Object.defineProperties(enhanced, Object.getOwnPropertyDescriptors(targetArgs[0]));
-        // }
-        // return enhanced;
-    };
 }
 
 const noopDecorator: Decorator = <TFunction extends Function>(

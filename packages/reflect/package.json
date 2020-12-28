@@ -47,6 +47,9 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
+  "peerDependencies": {
+    "@aspectjs/common": "0.1.4"
+  },
   "size-limit": [
     {
       "limit": "200 ms",

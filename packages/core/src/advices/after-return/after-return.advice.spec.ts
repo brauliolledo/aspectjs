@@ -1,10 +1,13 @@
 import { AfterReturn, Aspect, Compile } from '@aspectjs/core/annotations';
-import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
+import { _AClass, _AMethod, _AProperty, _Labeled } from '@root/testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
 
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType, AfterReturnContext } from '../types';
 import Spy = jasmine.Spy;
+import { on } from '../../advice/pointcut';
+import { AfterReturnContext } from './after-return.context';
+import { AdviceContext } from '../../advice/advice.context.type';
+import { AdviceType } from '../../advice/advice.type';
 
 describe('@AfterReturn advice', () => {
     let advice: Spy;
@@ -12,13 +15,13 @@ describe('@AfterReturn advice', () => {
     let weaver: Weaver;
     beforeEach(() => {
         advice = jasmine.createSpy('advice').and.callFake(function (ctxt) {});
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
     describe('applied on some class', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterReturnAspect {
-                @AfterReturn(on.class.withAnnotations(AClass))
+                @AfterReturn(on.class.withAnnotations(_AClass))
                 apply(ctxt: AfterReturnContext<any, AdviceType.CLASS>, retVal: any): void {
                     expect(retVal).toEqual(ctxt.value);
                     return advice.bind(this)(ctxt, retVal);
@@ -39,7 +42,7 @@ describe('@AfterReturn advice', () => {
                 expect(this).toEqual(jasmine.any(aspectClass));
             });
 
-            @AClass()
+            @_AClass()
             class A {}
             new A();
 
@@ -49,8 +52,8 @@ describe('@AfterReturn advice', () => {
         describe('creating an instance of this class', () => {
             describe('with a constructor that throws', () => {
                 it('should not call the aspect', () => {
-                    @AClass()
-                    class A implements Labeled {
+                    @_AClass()
+                    class A implements _Labeled {
                         constructor(label: string) {
                             throw new Error('expected');
                         }
@@ -65,8 +68,8 @@ describe('@AfterReturn advice', () => {
 
             describe('with a constructor that do not throws', () => {
                 it('should call the aspect', () => {
-                    @AClass()
-                    class A implements Labeled {
+                    @_AClass()
+                    class A implements _Labeled {
                         public labels: string[];
                         constructor(label: string) {
                             this.labels = [label];
@@ -82,7 +85,7 @@ describe('@AfterReturn advice', () => {
                     beforeEach(() => {
                         advice = jasmine
                             .createSpy('afterReturn')
-                            .and.callFake((ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
+                            .and.callFake((ctxt: AdviceContext<_Labeled, AdviceType.CLASS>) => {
                                 return Object.assign(Object.create(ctxt.target.proto), {
                                     labels: ['ABis'],
                                 });
@@ -90,8 +93,8 @@ describe('@AfterReturn advice', () => {
                     });
 
                     it('should assign "this" instance to the returned value', () => {
-                        @AClass()
-                        class A implements Labeled {
+                        @_AClass()
+                        class A implements _Labeled {
                             public labels: string[];
                             constructor(label: string) {
                                 this.labels = [label];
@@ -112,13 +115,13 @@ describe('@AfterReturn advice', () => {
             });
         });
 
-        let a: Labeled;
+        let a: _Labeled;
 
         describe('that throws', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @Compile(on.property.withAnnotations(AProperty))
+                    @Compile(on.property.withAnnotations(_AProperty))
                     compile() {
                         return {
                             get() {
@@ -127,15 +130,15 @@ describe('@AfterReturn advice', () => {
                         };
                     }
 
-                    @AfterReturn(on.property.withAnnotations(AProperty))
+                    @AfterReturn(on.property.withAnnotations(_AProperty))
                     after() {
                         advice(null, null);
                     }
                 }
                 weaver.enable(new PropAspect());
 
-                class A implements Labeled {
-                    @AProperty()
+                class A implements _Labeled {
+                    @_AProperty()
                     labels: string[];
                 }
                 a = new A();
@@ -153,7 +156,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @AfterReturn(on.property.withAnnotations(AProperty))
+                    @AfterReturn(on.property.withAnnotations(_AProperty))
                     after(ctxt: AdviceContext, returnValue: any) {
                         return advice.bind(this)(ctxt, returnValue);
                     }
@@ -162,8 +165,8 @@ describe('@AfterReturn advice', () => {
                 aspectClass = PropAspect;
                 weaver.enable(new PropAspect());
 
-                class A implements Labeled {
-                    @AProperty()
+                class A implements _Labeled {
+                    @_AProperty()
                     labels: string[] = ['x'];
                 }
                 a = new A();
@@ -196,15 +199,15 @@ describe('@AfterReturn advice', () => {
                 beforeEach(() => {
                     @Aspect('PropAspect')
                     class PropAspect {
-                        @AfterReturn(on.property.withAnnotations(AProperty))
+                        @AfterReturn(on.property.withAnnotations(_AProperty))
                         after(ctxt: AdviceContext<any, any>, returnValue: any) {
                             return returnValue.concat('a');
                         }
                     }
                     weaver.enable(new PropAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         labels: string[] = ['x'];
                     }
                     a = new A();
@@ -224,13 +227,13 @@ describe('@AfterReturn advice', () => {
             });
         });
 
-        let a: Labeled;
+        let a: _Labeled;
 
         describe('that throws', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @Compile(on.property.withAnnotations(AProperty))
+                    @Compile(on.property.withAnnotations(_AProperty))
                     compile() {
                         return {
                             set() {
@@ -239,15 +242,15 @@ describe('@AfterReturn advice', () => {
                         };
                     }
 
-                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
+                    @AfterReturn(on.property.setter.withAnnotations(_AProperty))
                     after() {
                         advice(null, null);
                     }
                 }
                 weaver.enable(new PropAspect());
 
-                class A implements Labeled {
-                    @AProperty()
+                class A implements _Labeled {
+                    @_AProperty()
                     labels: string[];
                 }
                 a = new A();
@@ -265,7 +268,7 @@ describe('@AfterReturn advice', () => {
             beforeEach(() => {
                 @Aspect('PropAspect')
                 class PropAspect {
-                    @AfterReturn(on.property.setter.withAnnotations(AProperty))
+                    @AfterReturn(on.property.setter.withAnnotations(_AProperty))
                     after(ctxt: AdviceContext<any, any>, returnValue: any) {
                         return advice.bind(this)(ctxt, returnValue);
                     }
@@ -273,8 +276,8 @@ describe('@AfterReturn advice', () => {
                 aspectClass = PropAspect;
                 weaver.enable(new PropAspect());
 
-                class A implements Labeled {
-                    @AProperty()
+                class A implements _Labeled {
+                    @_AProperty()
                     labels: string[] = ['x'];
                 }
                 a = new A();
@@ -307,15 +310,15 @@ describe('@AfterReturn advice', () => {
                 beforeEach(() => {
                     @Aspect('PropAspect')
                     class PropAspect {
-                        @AfterReturn(on.property.setter.withAnnotations(AProperty))
+                        @AfterReturn(on.property.setter.withAnnotations(_AProperty))
                         after(ctxt: AdviceContext<any, any>) {
                             return ['afterReturnValue'];
                         }
                     }
                     weaver.enable(new PropAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         labels: string[];
                     }
                     a = new A();
@@ -324,7 +327,7 @@ describe('@AfterReturn advice', () => {
                 it('should throw an error', () => {
                     expect(() => (a.labels = ['newValue'])).toThrow(
                         new Error(
-                            '@AfterReturn(@AProperty) PropAspect.after(): Returning from advice is not supported',
+                            'Error applying advice @AfterReturn(@AProperty) PropAspect.after() on property "A.labels": Returning from advice is not supported',
                         ),
                     );
                 });
@@ -340,7 +343,7 @@ describe('@AfterReturn advice', () => {
 
             @Aspect('MethodAspect')
             class MethodAspect {
-                @AfterReturn(on.method.withAnnotations(AMethod))
+                @AfterReturn(on.method.withAnnotations(_AMethod))
                 after(ctxt: AfterReturnContext<any, any>, returnValue: any) {
                     return advice(ctxt, returnValue);
                 }
@@ -348,13 +351,13 @@ describe('@AfterReturn advice', () => {
             weaver.enable(new MethodAspect());
         });
 
-        let a: Labeled;
+        let a: _Labeled;
 
         describe('that throws', () => {
             beforeEach(() => {
-                class A implements Labeled {
-                    @AMethod()
-                    addLabel() {
+                class A implements _Labeled {
+                    @_AMethod()
+                    addLabel(): string[] {
                         throw new Error('expected');
                     }
                 }
@@ -373,9 +376,9 @@ describe('@AfterReturn advice', () => {
             let returnValue: any;
             beforeEach(() => {
                 returnValue = undefined;
-                class A implements Labeled {
+                class A implements _Labeled {
                     labels: string[] = [];
-                    @AMethod()
+                    @_AMethod()
                     addLabel(...args: string[]) {
                         return (this.labels = this.labels.concat(args));
                     }

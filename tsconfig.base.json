@@ -23,6 +23,7 @@
     "target": "es2015",
     "baseUrl": "packages",
     "paths": {
+      "@root/testing": ["../testing/index.ts"],
       "@aspectjs/common": ["common/public_api.ts"],
       "@aspectjs/common/utils": ["common/utils/public_api.ts"],
       "@aspectjs/reflect": ["reflect/public_api.ts"],
@@ -30,6 +31,7 @@
       "@aspectjs/core": ["core/public_api.ts"],
       "@aspectjs/core/annotations": ["core/annotations/public_api.ts"],
       "@aspectjs/core/testing": ["core/testing/public_api.ts"],
+      "@aspectjs/weaver": ["weaver/public_api.ts"],
       "@aspectjs/memo": ["memo/public_api.ts"],
       "@aspectjs/memo/support/observables": ["memo/support/observables/public_api.ts"],
       "@aspectjs/fetch/annotations": ["fetch/annotations/public_api.ts"]

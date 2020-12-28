@@ -1,4 +1,4 @@
-import { ASPECTJS_ANNOTATION_FACTORY, AnnotationRef } from '@aspectjs/core/commons';
+import { ASPECTJS_ANNOTATION_FACTORY, AnnotationRef } from '@aspectjs/common';
 import { MemoAspectOptions } from './memo.aspect';
 import { MemoDriver } from './drivers';
 

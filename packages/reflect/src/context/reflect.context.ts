@@ -25,6 +25,6 @@ export function _setReflectContext(reflectContext: ReflectContext) {
 /**
  * @internal
  */
-export function _getWeaverContext(): ReflectContext {
+export function _getReflectContext(): ReflectContext {
     return _reflectContext;
 }

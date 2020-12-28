@@ -1,5 +1,5 @@
 import { getAspectOptions, assert, isObject, isString } from '@aspectjs/common/utils';
-import { AspectType } from '../aspect';
+import { AspectType } from '../aspect/aspect.type';
 
 /**
  * A WeaverProfile is a set of Aspects that can be enabled or disabled.

@@ -1,19 +1,10 @@
 import { Aspect, Before, Compile, Order } from '@aspectjs/core/annotations';
-import {
-    AClass,
-    AMethod,
-    AParameter,
-    AProperty,
-    BClass,
-    BMethod,
-    BParameter,
-    BProperty,
-    setupTestingWeaverContext,
-} from '@aspectjs/core/testing';
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType } from '../types';
+import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParameter, _BProperty } from '@root/testing';
+
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
 import { CompileContext } from './compile.context';
+import { Weaver } from '@aspectjs/weaver';
+import { AdviceContext, AdviceType, on } from '../../..';
 
 describe('CompileContext', () => {
     let weaver: Weaver;
@@ -23,7 +14,7 @@ describe('CompileContext', () => {
     let beforeBAdvice = jasmine.createSpy('beforeBAdvice');
 
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
         compileAAdvice = jasmine.createSpy('compileAAdvice');
         compileBAdvice = jasmine.createSpy('compileBAdvice');
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');
@@ -37,13 +28,13 @@ describe('CompileContext', () => {
             @Aspect()
             class ClassAspectA {
                 @Order(1)
-                @Compile(on.class.withAnnotations(AClass))
+                @Compile(on.class.withAnnotations(_AClass))
                 compileA(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 beforeA(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     beforeAAdvice(ctxt);
                 }
@@ -51,13 +42,13 @@ describe('CompileContext', () => {
             @Aspect()
             class ClassAspectB {
                 @Order(2)
-                @Compile(on.class.withAnnotations(BClass))
+                @Compile(on.class.withAnnotations(_BClass))
                 compileB(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Before(on.class.withAnnotations(BClass))
+                @Before(on.class.withAnnotations(_BClass))
                 beforeB(ctxt: CompileContext<any, AdviceType.PROPERTY>) {
                     beforeBAdvice(ctxt);
                 }
@@ -85,27 +76,27 @@ describe('CompileContext', () => {
                 beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Compile advices on the same class', () => {
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
 
                 expect(data.advices).toEqual(['compileA', 'compileB']);
             });
 
             it('should not be shared across two @Compile advices on different classes', () => {
-                @AClass()
+                @_AClass()
                 class Test1 {}
 
                 expect(data.advices).toEqual(['compileA']);
-                @BClass()
+                @_BClass()
                 class Test2 {}
 
                 expect(data.advices).toEqual(['compileB']);
             });
 
             it('should be shared between a @Compile and a @Before advice on the same class', () => {
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 expect(data.advices).toEqual(['compileA', 'compileB']);
                 new Test();
@@ -121,8 +112,8 @@ describe('CompileContext', () => {
                     expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
                 });
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
             });
         });
@@ -134,13 +125,13 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @Compile(on.property.withAnnotations(AProperty))
+                @Compile(on.property.withAnnotations(_AProperty))
                 compileA(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Before(on.property.withAnnotations(AProperty))
+                @Before(on.property.withAnnotations(_AProperty))
                 beforeA(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     beforeAAdvice(ctxt);
                 }
@@ -148,13 +139,13 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(2)
-                @Compile(on.property.withAnnotations(BProperty))
+                @Compile(on.property.withAnnotations(_BProperty))
                 compileB(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Before(on.property.withAnnotations(BProperty))
+                @Before(on.property.withAnnotations(_BProperty))
                 beforeB(ctxt: CompileContext<any, AdviceType.CLASS>) {
                     beforeBAdvice(ctxt);
                 }
@@ -183,8 +174,8 @@ describe('CompileContext', () => {
             });
             it('should be shared across two @Compile advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -192,12 +183,12 @@ describe('CompileContext', () => {
             });
 
             it('should not be shared across two @Compile advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     prop1: any;
 
-                    @BProperty()
+                    @_BProperty()
                     prop2: any;
                 }
 
@@ -206,8 +197,8 @@ describe('CompileContext', () => {
 
             it('should be shared between a @Compile and a @Before advice on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 expect(data.advices).toEqual(['compileA', 'compileB']);
@@ -226,8 +217,8 @@ describe('CompileContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 expect(compileAAdvice).toHaveBeenCalled();
@@ -242,13 +233,13 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @Compile(on.method.withAnnotations(AMethod))
+                @Compile(on.method.withAnnotations(_AMethod))
                 compileA(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Before(on.method.withAnnotations(AMethod))
+                @Before(on.method.withAnnotations(_AMethod))
                 beforeA(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     beforeAAdvice(ctxt);
                 }
@@ -256,13 +247,13 @@ describe('CompileContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(2)
-                @Compile(on.method.withAnnotations(BMethod))
+                @Compile(on.method.withAnnotations(_BMethod))
                 compileB(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Before(on.method.withAnnotations(BMethod))
+                @Before(on.method.withAnnotations(_BMethod))
                 beforeB(ctxt: CompileContext<any, AdviceType.METHOD>) {
                     beforeBAdvice(ctxt);
                 }
@@ -291,8 +282,8 @@ describe('CompileContext', () => {
             });
             it('should be shared across two @Compile advices on the same method', () => {
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     someMethod(): any {}
                 }
 
@@ -300,12 +291,12 @@ describe('CompileContext', () => {
             });
 
             it('should not be shared across two @Compile advices on different method', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AMethod()
+                    @_AMethod()
                     method1(): any {}
 
-                    @BMethod()
+                    @_BMethod()
                     method2(): any {}
                 }
 
@@ -314,8 +305,8 @@ describe('CompileContext', () => {
 
             it('should be shared between a @Compile and a @Before advice on the same method', () => {
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
                 expect(data.advices).toEqual(['compileA', 'compileB']);
@@ -333,8 +324,8 @@ describe('CompileContext', () => {
                 });
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
                 expect(compileAAdvice).toHaveBeenCalled();
@@ -349,13 +340,13 @@ describe('CompileContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Order(1)
-                @Compile(on.parameter.withAnnotations(AParameter))
+                @Compile(on.parameter.withAnnotations(_AParameter))
                 compileA(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     compileAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Before(on.parameter.withAnnotations(AParameter))
+                @Before(on.parameter.withAnnotations(_AParameter))
                 beforeA(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     beforeAAdvice(ctxt);
                 }
@@ -363,13 +354,13 @@ describe('CompileContext', () => {
             @Aspect()
             class ParameterAspectB {
                 @Order(2)
-                @Compile(on.parameter.withAnnotations(BParameter))
+                @Compile(on.parameter.withAnnotations(_BParameter))
                 compileB(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     compileBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Before(on.parameter.withAnnotations(BParameter))
+                @Before(on.parameter.withAnnotations(_BParameter))
                 beforeB(ctxt: CompileContext<any, AdviceType.PARAMETER>) {
                     beforeBAdvice(ctxt);
                 }
@@ -398,7 +389,7 @@ describe('CompileContext', () => {
             });
             it('should be shared across two @Compile advices on the same parameter', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 expect(data.advices).toEqual(['compileA', 'compileB']);
@@ -406,7 +397,7 @@ describe('CompileContext', () => {
 
             it('should not be shared across two @Compile advices on different parameters', () => {
                 class Test {
-                    method(@AParameter() paramA: any, @BParameter() paramB: any): any {}
+                    method(@_AParameter() paramA: any, @_BParameter() paramB: any): any {}
                 }
 
                 expect(data.advices).toEqual(['compileA']);
@@ -414,7 +405,7 @@ describe('CompileContext', () => {
 
             it('should be shared between a @Compile and a @Before advice on the same parameters', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
                 expect(data.advices).toEqual(['compileA', 'compileB']);
                 new Test().someMethod('');
@@ -432,7 +423,7 @@ describe('CompileContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
                 expect(compileAAdvice).toHaveBeenCalled();
                 expect(compileBAdvice).toHaveBeenCalled();

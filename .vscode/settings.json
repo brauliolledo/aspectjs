@@ -4,10 +4,15 @@
     "editor.formatOnSave": true,
     "javascript.implicitProjectConfig.experimentalDecorators": true,
     "cSpell.words": [
+        "AFTERRETURN",
+        "AFTERTHROW",
         "Joinpoint",
         "aspectjs",
+        "ctxt",
         "fesm",
         "pointcut",
+        "pointcuts",
         "tsbuildinfo"
-    ]
+    ],
+    "typescript.preferences.importModuleSpecifier": "relative"
 }

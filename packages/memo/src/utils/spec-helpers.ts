@@ -1,5 +1,5 @@
-import { Weaver } from '@aspectjs/core/commons';
-import { setupTestingWeaverContext } from '@aspectjs/core/testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
 
 import { Memo, MemoOptions } from '../memo.annotation';
 import { MemoAspect, MemoAspectOptions } from '../memo.aspect';
@@ -23,11 +23,13 @@ export function createMemoMethod(method?: (...args: any[]) => any, options?: Mem
 }
 
 export function setupMemoAspect(memoAspectOptions?: MemoAspectOptions): Weaver {
-    return setupTestingWeaverContext(
-        new MemoAspect({
-            ...memoAspectOptions,
-            drivers: memoAspectOptions?.drivers ?? [new LsMemoDriver(), new IdbMemoDriver()],
-        }),
-        new DefaultCacheableAspect(),
-    ).getWeaver();
+    return setupAspectTestingContext()
+        .weaverContext.getWeaver()
+        .enable(
+            new MemoAspect({
+                ...memoAspectOptions,
+                drivers: memoAspectOptions?.drivers ?? [new LsMemoDriver(), new IdbMemoDriver()],
+            }),
+            new DefaultCacheableAspect(),
+        );
 }

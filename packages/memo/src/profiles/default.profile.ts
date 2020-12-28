@@ -1,4 +1,4 @@
-import { WeaverProfile } from '@aspectjs/core/commons';
+import { WeaverProfile } from '@aspectjs/common';
 import { DefaultCacheableAspect } from '../cacheable/cacheable.aspect';
 import { IdbMemoDriver, LsMemoDriver, LsMemoSerializer, LzMemoSerializer, MemoDriver } from '../drivers';
 import { DEFAULT_MARSHALLERS, MemoAspect, MemoAspectOptions } from '../memo.aspect';

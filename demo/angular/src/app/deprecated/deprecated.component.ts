@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { AnnotationFactory, AnnotationType, BeforeContext, on } from '@aspectjs/core/commons';
+import { AnnotationFactory, AnnotationType, BeforeContext, on } from '@aspectjs/common';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 import { WEAVER } from '@aspectjs/core';
 import { Memo } from '@aspectjs/memo';

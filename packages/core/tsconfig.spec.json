@@ -2,12 +2,9 @@
   "extends": "./tsconfig.json",
   "include": [
     "src/**/*.ts",
-    "commons/**/*.ts",
-    "utils/**/*.ts",
-    "annotations/**/*.ts",
-    "testing/**/*.ts",
     "public_api.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "../testing/"
   ],
   "exclude": [
     "dist",
@@ -15,6 +12,15 @@
   ],
   "compilerOptions": {
     "rootDir": ".",
-    "module": "commonjs"
-  }
+    "module": "commonjs",
+    "types": ["reflect-metadata", "jasmine", "node"]
+  },
+  "references": [
+    { "path": "../common" },
+    { "path": "../reflect" },
+    { "path": "../reflect/testing" },
+    { "path": "../weaver/testing" },
+    { "path": "../weaver" },
+    { "path": "./annotations" }
+  ]
 }

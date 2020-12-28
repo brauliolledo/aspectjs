@@ -1,4 +1,5 @@
-import { AnnotationRef, PointcutExpression, ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/core/commons';
+import { AnnotationRef, ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/common';
+import { PointcutExpression } from '@aspectjs/core';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
 AnnotationRef;

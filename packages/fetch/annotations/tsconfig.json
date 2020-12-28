@@ -15,7 +15,7 @@
       "path": "../../core",
     },
     {
-      "path": "../../core/commons"
+      "path": "../../common"
     }
   ]
 }

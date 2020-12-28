@@ -1,19 +1,9 @@
 import { After, AfterReturn, Aspect, Order } from '@aspectjs/core/annotations';
-import {
-    AClass,
-    AMethod,
-    AParameter,
-    AProperty,
-    BClass,
-    BMethod,
-    BParameter,
-    BProperty,
-    setupTestingWeaverContext,
-} from '@aspectjs/core/testing';
-
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType, AfterContext, AfterReturnContext, AfterThrowContext } from '../types';
+import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParameter, _BProperty } from '@root/testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
+import { AfterReturnContext } from './after-return.context';
+import { AdviceType, AfterContext, AdviceContext, AfterThrowContext, on } from '../../..';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;
@@ -23,7 +13,7 @@ describe('AfterReturnContext', () => {
     let afterBAdvice = jasmine.createSpy('afterBAdvice');
 
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
         afterReturnAAdvice = jasmine.createSpy('afterReturnAAdvice');
         afterReturnBAdvice = jasmine.createSpy('afterReturnBAdvice');
         afterAAdvice = jasmine.createSpy('afterAAdvice');
@@ -36,13 +26,13 @@ describe('AfterReturnContext', () => {
         beforeEach(() => {
             @Aspect()
             class ClassAspectA {
-                @AfterReturn(on.class.withAnnotations(AClass))
+                @AfterReturn(on.class.withAnnotations(_AClass))
                 @Order(1)
                 afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
-                @After(on.class.withAnnotations(AClass))
+                @After(on.class.withAnnotations(_AClass))
                 @Order(1)
                 afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
@@ -50,13 +40,13 @@ describe('AfterReturnContext', () => {
             }
             @Aspect()
             class ClassAspectB {
-                @AfterReturn(on.class.withAnnotations(BClass))
+                @AfterReturn(on.class.withAnnotations(_BClass))
                 @Order(0)
                 afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PROPERTY>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
-                @After(on.class.withAnnotations(BClass))
+                @After(on.class.withAnnotations(_BClass))
                 @Order(0)
                 afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
@@ -82,8 +72,8 @@ describe('AfterReturnContext', () => {
                 afterReturnBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterReturnB'));
             });
             it('should be shared across two @AfterReturn advices on the same class', () => {
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
                 expect(afterReturnAAdvice).toHaveBeenCalled();
@@ -92,11 +82,11 @@ describe('AfterReturnContext', () => {
             });
 
             it('should not be shared across two @AfterReturn advices on different classes', () => {
-                @AClass()
+                @_AClass()
                 class Test1 {}
                 new Test1();
                 expect(data.advices).toEqual(['afterReturnA']);
-                @BClass()
+                @_BClass()
                 class Test2 {}
                 new Test2();
 
@@ -107,8 +97,8 @@ describe('AfterReturnContext', () => {
                 afterAAdvice.and.callFake((ctxt: AfterContext<any, any>) => pushData(ctxt, 'afterA'));
                 afterBAdvice.and.callFake((ctxt: AfterContext<any, any>) => pushData(ctxt, 'afterB'));
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
                 expect(data.advices).toEqual(['afterReturnA', 'afterReturnB', 'afterA', 'afterB']);
@@ -122,8 +112,8 @@ describe('AfterReturnContext', () => {
                 expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
             });
 
-            @AClass()
-            @BClass()
+            @_AClass()
+            @_BClass()
             class Test {}
 
             [afterAAdvice, afterBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());
@@ -139,13 +129,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterReturn(on.property.withAnnotations(AProperty))
+                @AfterReturn(on.property.withAnnotations(_AProperty))
                 afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.property.withAnnotations(AProperty))
+                @After(on.property.withAnnotations(_AProperty))
                 afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
@@ -153,13 +143,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterReturn(on.property.withAnnotations(BProperty))
+                @AfterReturn(on.property.withAnnotations(_BProperty))
                 afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.property.withAnnotations(BProperty))
+                @After(on.property.withAnnotations(_BProperty))
                 afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -189,8 +179,8 @@ describe('AfterReturnContext', () => {
             });
             it('should be shared across two @AfterReturn advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -201,11 +191,11 @@ describe('AfterReturnContext', () => {
             });
 
             it('should not be shared across two @AfterReturn advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     prop1: any;
-                    @BProperty()
+                    @_BProperty()
                     prop2: any;
                 }
                 const t = new Test();
@@ -223,8 +213,8 @@ describe('AfterReturnContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -248,8 +238,8 @@ describe('AfterReturnContext', () => {
             });
 
             class Test {
-                @AProperty()
-                @BProperty()
+                @_AProperty()
+                @_BProperty()
                 prop: any;
             }
 
@@ -266,12 +256,12 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterReturn(on.property.setter.withAnnotations(AProperty))
+                @AfterReturn(on.property.setter.withAnnotations(_AProperty))
                 afterReturnA(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnAAdvice(ctxt);
                 }
                 @Order(1)
-                @After(on.property.setter.withAnnotations(AProperty))
+                @After(on.property.setter.withAnnotations(_AProperty))
                 afterA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
@@ -279,13 +269,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterReturn(on.property.setter.withAnnotations(BProperty))
+                @AfterReturn(on.property.setter.withAnnotations(_BProperty))
                 afterReturnB(ctxt: AfterReturnContext<any, AdviceType.CLASS>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.property.setter.withAnnotations(BProperty))
+                @After(on.property.setter.withAnnotations(_BProperty))
                 afterB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -315,8 +305,8 @@ describe('AfterReturnContext', () => {
             });
             it('should be shared across two @AfterReturn advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
@@ -326,12 +316,12 @@ describe('AfterReturnContext', () => {
             });
 
             it('should not be shared across two @AfterReturn advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     prop1: any;
 
-                    @BProperty()
+                    @_BProperty()
                     prop2: any;
                 }
 
@@ -349,8 +339,8 @@ describe('AfterReturnContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 [afterReturnAAdvice, afterReturnBAdvice, afterAAdvice, afterBAdvice].forEach((fn) =>
@@ -373,8 +363,8 @@ describe('AfterReturnContext', () => {
             });
 
             class Test {
-                @AProperty()
-                @BProperty()
+                @_AProperty()
+                @_BProperty()
                 prop: any;
             }
 
@@ -391,13 +381,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterReturn(on.method.withAnnotations(AMethod))
+                @AfterReturn(on.method.withAnnotations(_AMethod))
                 afterReturnA(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.method.withAnnotations(AMethod))
+                @After(on.method.withAnnotations(_AMethod))
                 afterA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
@@ -405,13 +395,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterReturn(on.method.withAnnotations(BMethod))
+                @AfterReturn(on.method.withAnnotations(_BMethod))
                 afterReturnB(ctxt: AfterReturnContext<any, AdviceType.METHOD>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.method.withAnnotations(BMethod))
+                @After(on.method.withAnnotations(_BMethod))
                 afterB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
@@ -438,8 +428,8 @@ describe('AfterReturnContext', () => {
 
             it('should be shared across two @AfterReturn advices on the same method', () => {
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     someMethod(): any {}
                 }
                 [afterReturnAAdvice, afterReturnBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
@@ -450,12 +440,12 @@ describe('AfterReturnContext', () => {
             });
 
             it('should not be shared across two @AfterReturn advices on different method', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AMethod()
+                    @_AMethod()
                     method1(): any {}
 
-                    @BMethod()
+                    @_BMethod()
                     method2(): any {}
                 }
 
@@ -473,8 +463,8 @@ describe('AfterReturnContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
 
@@ -491,8 +481,8 @@ describe('AfterReturnContext', () => {
             });
 
             class Test {
-                @AMethod()
-                @BMethod()
+                @_AMethod()
+                @_BMethod()
                 method(): any {}
             }
 
@@ -509,13 +499,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Order(1)
-                @AfterReturn(on.parameter.withAnnotations(AParameter))
+                @AfterReturn(on.parameter.withAnnotations(_AParameter))
                 afterReturnA(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.parameter.withAnnotations(AParameter))
+                @After(on.parameter.withAnnotations(_AParameter))
                 afterA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
@@ -523,13 +513,13 @@ describe('AfterReturnContext', () => {
             @Aspect()
             class ParameterAspectB {
                 @Order(0)
-                @AfterReturn(on.parameter.withAnnotations(BParameter))
+                @AfterReturn(on.parameter.withAnnotations(_BParameter))
                 afterReturnB(ctxt: AfterReturnContext<any, AdviceType.PARAMETER>): void {
                     afterReturnBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.parameter.withAnnotations(BParameter))
+                @After(on.parameter.withAnnotations(_BParameter))
                 afterB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }
@@ -555,7 +545,7 @@ describe('AfterReturnContext', () => {
             });
             it('should be shared across two @AfterReturn advices on the same parameter', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('');
@@ -565,7 +555,7 @@ describe('AfterReturnContext', () => {
 
             it('should not be shared across two @AfterReturn advices on different parameters', () => {
                 class Test {
-                    someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {}
+                    someMethod(@_AParameter() paramA: any, @_BParameter() paramB: any): any {}
                 }
                 new Test().someMethod('', '');
 
@@ -577,7 +567,7 @@ describe('AfterReturnContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('');
@@ -594,7 +584,7 @@ describe('AfterReturnContext', () => {
             });
 
             class Test {
-                someMethod(@AParameter() @BParameter() param: any): any {}
+                someMethod(@_AParameter() @_BParameter() param: any): any {}
             }
 
             [afterAAdvice, afterBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());

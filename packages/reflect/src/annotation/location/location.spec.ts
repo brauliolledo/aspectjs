@@ -1,13 +1,15 @@
 import { AnnotationFactory } from '@aspectjs/common';
+import { setupReflectTestingContext } from '@aspectjs/reflect/testing';
 
-import { setupTestingReflectContext, _AMethod, _AParameter } from '../../../testing';
 import { ReflectContext } from '../../context/reflect.context';
 import { _AnnotationLocationImpl } from './location.factory';
+
+import { _AMethod, _AParameter } from '@root/testing';
 
 describe('AnnotationLocationFactory', () => {
     let reflectContext: ReflectContext;
     beforeEach(() => {
-        reflectContext = setupTestingReflectContext();
+        reflectContext = setupReflectTestingContext();
     });
     class Decorated {
         value: any;
@@ -52,7 +54,7 @@ describe('AnnotationLocationFactory', () => {
         it('should get a location with no value bound', () => {
             const location = reflectContext.annotations.location.of(AClass);
             expect(() => _AnnotationLocationImpl.unwrap(location).getRuntimeContext()).toThrow(
-                new TypeError('location is not bound to runtime context'),
+                new TypeError('location is not bound to a runtime context'),
             );
         });
     });

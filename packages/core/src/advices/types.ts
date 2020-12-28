@@ -1,5 +1,6 @@
-import { AdviceContext } from './advice.context.type';
-
+import { AnnotationType } from '@aspectjs/common';
+import { AdviceContext } from '../advice/advice.context.type';
+import { JoinPoint } from '../advice/joinpoint';
 import {
     AfterPointcut,
     AfterReturnPointcut,
@@ -8,9 +9,7 @@ import {
     BeforePointcut,
     CompilePointcut,
     PointcutPhase,
-} from '../types';
-import { AnnotationType } from '../annotation/annotation.types';
-import { JoinPoint } from '../types';
+} from '../advice/pointcut';
 
 /**
  * @public
@@ -80,13 +79,3 @@ export type Advice<
     : V extends PointcutPhase.AFTER
     ? AfterAdvice<T, A>
     : never;
-
-/**
- * @public
- */
-export { AnnotationType as AdviceType };
-
-/**
- * @public
- */
-export * from './advice.context.type';

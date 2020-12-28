@@ -1,5 +1,5 @@
 {
-  "name": "@aspectjs/core-testing",
+  "name": "@aspectjs/reflect-testing",
   "version": "0.1.3",
   "private": true,
   "main": "../dist/bundles/testing.umd.js",

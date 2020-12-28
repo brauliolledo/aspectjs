@@ -44,7 +44,7 @@ npm install @aspectjs/core
 
 ```js
 // deprecated.annotation.js
-import { AnnotationFactory } from '@aspectjs/core/commons';
+import { AnnotationFactory } from '@aspectjs/common';
 
 // Define the annotation
 export const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message) {});
@@ -55,7 +55,7 @@ export const Deprecated = new AnnotationFactory('my-lib').create(function Deprec
 
 ```typescript
 // deprecated.annotation.ts
-import { AnnotationFactory } from '@aspectjs/core/commons';
+import { AnnotationFactory } from '@aspectjs/common';
 
 // Define the annotation
 const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(message?: string): any {
@@ -74,7 +74,7 @@ const Deprecated = new AnnotationFactory('my-lib').create(function Deprecated(me
 <code-block title="Javascript" active>
 
 ```js
-import { on, AnnotationType } from '@aspectjs/core/commons';
+import { on, AnnotationType } from '@aspectjs/common';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 
 import { Deprecated } from './deprecated.annotation';
@@ -114,7 +114,7 @@ class DeprecatedAspect {
 <code-block title="Typescript">
 
 ```typescript
-import { BeforeContext, on, AnnotationType } from '@aspectjs/core/commons';
+import { BeforeContext, on, AnnotationType } from '@aspectjs/common';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 
 import { Deprecated } from './deprecated.annotation';

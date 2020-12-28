@@ -1,12 +1,12 @@
 import { Aspect } from '@aspectjs/core/annotations';
 import { WeaverProfile } from './profile';
-import { setupTestingWeaverContext } from '../../../testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
 
 describe('WeaverProfile', function () {
     let testAspect: any;
     let TestAspect: any;
     beforeEach(() => {
-        setupTestingWeaverContext();
+        setupAspectTestingContext();
 
         @Aspect('test')
         class _TestAspect {}

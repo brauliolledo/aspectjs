@@ -1,23 +1,26 @@
-import { After, AfterReturn, AfterThrow, Around, Aspect, Before, Compile } from '..';
 import {
+    AdviceType,
     AfterContext,
     AfterReturnContext,
     AfterThrowContext,
     AroundContext,
     BeforeContext,
-    Weaver,
-    AdviceType,
     JoinPoint,
     on,
-} from '@aspectjs/core/commons';
-import { AClass, AMethod, AProperty, BMethod, Labeled, setupTestingWeaverContext } from '../../../testing';
+} from '@aspectjs/core';
+
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
+import { _AClass, _AMethod, _AProperty, _BMethod, _Labeled } from '@root/testing';
+
+import { After, AfterReturn, AfterThrow, Around, Aspect, Before, Compile } from '..';
 import { Order } from '../order.annotation';
 import Spy = jasmine.Spy;
 
 describe('@Aspect', () => {
     let weaver: Weaver;
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
     describe('with an advice', () => {
         describe('targeted with multiple pointcuts', () => {
@@ -26,8 +29,8 @@ describe('@Aspect', () => {
                 advice = jasmine.createSpy('advice');
                 @Aspect()
                 class LabelAspect {
-                    @Around(on.method.withAnnotations(AMethod))
-                    @Around(on.method.withAnnotations(BMethod))
+                    @Around(on.method.withAnnotations(_AMethod))
+                    @Around(on.method.withAnnotations(_BMethod))
                     advice(ctxt: AroundContext<any, any>, jp: JoinPoint) {
                         advice();
                         jp();
@@ -40,8 +43,8 @@ describe('@Aspect', () => {
             describe('when pointcuts match two times', () => {
                 it('should call the advice twice', () => {
                     class SomeClass {
-                        @AMethod()
-                        @BMethod()
+                        @_AMethod()
+                        @_BMethod()
                         someMethod() {}
                     }
 
@@ -54,7 +57,7 @@ describe('@Aspect', () => {
             describe('when pointcuts match one time', () => {
                 it('should call the advice once', () => {
                     class SomeClass {
-                        @BMethod()
+                        @_BMethod()
                         someMethod() {}
                     }
 
@@ -77,12 +80,12 @@ describe('@Aspect', () => {
             childMethodAdvice = jasmine.createSpy('parentMethodAdvice');
 
             class ParentClass {
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 parentMethod1() {
                     parentMethodAdvice1('parent');
                 }
 
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 parentMethod2() {
                     parentMethodAdvice2('parent');
                 }
@@ -90,12 +93,12 @@ describe('@Aspect', () => {
 
             @Aspect()
             class ChildClass extends ParentClass {
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 parentMethod2() {
                     parentMethodAdvice2('child');
                 }
 
-                @After(on.class.withAnnotations(AClass))
+                @After(on.class.withAnnotations(_AClass))
                 childMethod() {
                     childMethodAdvice('child');
                 }
@@ -109,7 +112,7 @@ describe('@Aspect', () => {
             expect(parentMethodAdvice2).not.toHaveBeenCalled();
             expect(childMethodAdvice).not.toHaveBeenCalled();
 
-            @AClass()
+            @_AClass()
             class C {}
 
             new C();
@@ -122,7 +125,7 @@ describe('@Aspect', () => {
             it('should not invoke parent advice', () => {
                 expect(parentMethodAdvice2).not.toHaveBeenCalled();
 
-                @AClass()
+                @_AClass()
                 class C {}
 
                 new C();
@@ -136,7 +139,7 @@ describe('@Aspect', () => {
 describe('given several @Aspects', () => {
     let weaver: Weaver;
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
     let labels: string[];
 
@@ -149,46 +152,46 @@ describe('given several @Aspects', () => {
             class LabelAspect {
                 constructor(public id: string) {}
 
-                @Compile(on.class.withAnnotations(AClass))
-                compileClass(ctxt: BeforeContext<Labeled, AdviceType.CLASS>) {
+                @Compile(on.class.withAnnotations(_AClass))
+                compileClass(ctxt: BeforeContext<_Labeled, AdviceType.CLASS>) {
                     const id = this.id;
                     return function () {
                         labels.push(`${id}_compileClass`);
                     };
                 }
 
-                @Before(on.class.withAnnotations(AClass))
-                beforeClass(ctxt: BeforeContext<Labeled, AdviceType.CLASS>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeClass(ctxt: BeforeContext<_Labeled, AdviceType.CLASS>) {
                     labels.push(`${this.id}_beforeClass`);
                 }
 
-                @Around(on.class.withAnnotations(AClass))
-                aroundClass(ctxt: AroundContext<Labeled, AdviceType.CLASS>) {
+                @Around(on.class.withAnnotations(_AClass))
+                aroundClass(ctxt: AroundContext<_Labeled, AdviceType.CLASS>) {
                     labels.push(`${this.id}_AroundClass.before`);
                     const r = ctxt.joinpoint();
                     labels.push(`${this.id}_AroundClass.after`);
                     return r;
                 }
 
-                @After(on.class.withAnnotations(AClass))
-                afterClass(ctxt: AfterContext<Labeled, AdviceType.CLASS>) {
+                @After(on.class.withAnnotations(_AClass))
+                afterClass(ctxt: AfterContext<_Labeled, AdviceType.CLASS>) {
                     labels.push(`${this.id}_AfterClass`);
                 }
 
-                @AfterReturn(on.class.withAnnotations(AClass))
-                afterReturnClass(ctxt: AfterReturnContext<Labeled, AdviceType.CLASS>) {
+                @AfterReturn(on.class.withAnnotations(_AClass))
+                afterReturnClass(ctxt: AfterReturnContext<_Labeled, AdviceType.CLASS>) {
                     labels.push(`${this.id}_AfterReturnClass`);
                     return ctxt.value;
                 }
 
-                @AfterThrow(on.class.withAnnotations(AClass))
-                afterThrowClass(ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) {
+                @AfterThrow(on.class.withAnnotations(_AClass))
+                afterThrowClass(ctxt: AfterThrowContext<_Labeled, AdviceType.CLASS>) {
                     labels.push(`${this.id}_AfterThrowClass`);
                     throw ctxt.error;
                 }
 
-                @Compile(on.property.withAnnotations(AProperty))
-                compileProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Compile(on.property.withAnnotations(_AProperty))
+                compileProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     const id = this.id;
 
                     return {
@@ -200,61 +203,61 @@ describe('given several @Aspects', () => {
                         },
                     };
                 }
-                @Before(on.property.withAnnotations(AProperty))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.property.withAnnotations(_AProperty))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_beforePropertyGet`);
                 }
 
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AroundPropertyGet.before`);
                     const r = ctxt.joinpoint();
                     labels.push(`${this.id}_AroundPropertyGet.after`);
                     return r;
                 }
 
-                @After(on.property.withAnnotations(AProperty))
-                afterProperty(ctxt: AfterContext<Labeled, AdviceType.PROPERTY>) {
+                @After(on.property.withAnnotations(_AProperty))
+                afterProperty(ctxt: AfterContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterPropertyGet`);
                 }
 
-                @AfterReturn(on.property.withAnnotations(AProperty))
-                afterReturnProperty(ctxt: AfterReturnContext<Labeled, AdviceType.PROPERTY>) {
+                @AfterReturn(on.property.withAnnotations(_AProperty))
+                afterReturnProperty(ctxt: AfterReturnContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterReturnPropertyGet`);
                     return ctxt.value;
                 }
 
-                @AfterThrow(on.property.withAnnotations(AProperty))
-                afterThrowProperty(ctxt: AfterThrowContext<Labeled, AdviceType.PROPERTY>) {
+                @AfterThrow(on.property.withAnnotations(_AProperty))
+                afterThrowProperty(ctxt: AfterThrowContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterThrowPropertyGet`);
                     throw ctxt.error;
                 }
 
-                @Before(on.property.setter.withAnnotations(AProperty))
-                beforePropertySet(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.property.setter.withAnnotations(_AProperty))
+                beforePropertySet(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_beforePropertySet`);
                 }
 
-                @Around(on.property.setter.withAnnotations(AProperty))
-                aroundPropertySet(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.setter.withAnnotations(_AProperty))
+                aroundPropertySet(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AroundPropertySet.before`);
                     const r = ctxt.joinpoint();
                     labels.push(`${this.id}_AroundPropertySet.after`);
                     return r;
                 }
 
-                @After(on.property.setter.withAnnotations(AProperty))
-                afterPropertySet(ctxt: AfterContext<Labeled, AdviceType.PROPERTY>) {
+                @After(on.property.setter.withAnnotations(_AProperty))
+                afterPropertySet(ctxt: AfterContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterPropertySet`);
                 }
 
-                @AfterReturn(on.property.setter.withAnnotations(AProperty))
-                afterReturnPropertySet(ctxt: AfterReturnContext<Labeled, AdviceType.PROPERTY>) {
+                @AfterReturn(on.property.setter.withAnnotations(_AProperty))
+                afterReturnPropertySet(ctxt: AfterReturnContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterReturnPropertySet`);
                 }
 
-                @AfterThrow(on.property.setter.withAnnotations(AProperty))
-                afterThrowPropertySet(ctxt: AfterThrowContext<Labeled, AdviceType.PROPERTY>) {
+                @AfterThrow(on.property.setter.withAnnotations(_AProperty))
+                afterThrowPropertySet(ctxt: AfterThrowContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push(`${this.id}_AfterThrowPropertySet`);
                     throw ctxt.error;
                 }
@@ -280,9 +283,9 @@ describe('given several @Aspects', () => {
             let A: any;
 
             beforeEach(() => {
-                @AClass()
+                @_AClass()
                 class A_ {
-                    @AProperty()
+                    @_AProperty()
                     labels: string[];
                 }
 
@@ -353,19 +356,19 @@ describe('given several @Aspects', () => {
         });
     });
     describe('when the advices specify an @Order', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect()
             class AAspect {
                 @Order(10)
-                @Before(on.class.withAnnotations(AClass))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_beforeClass');
                 }
 
                 @Order(10)
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
                     labels.push('A_AroundPropertyGet.after');
@@ -375,14 +378,14 @@ describe('given several @Aspects', () => {
             @Aspect()
             class BAspect {
                 @Order(9)
-                @Before(on.class.withAnnotations(AClass))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_beforeClass');
                 }
 
                 @Order(9)
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
                     labels.push('B_AroundPropertyGet.after');
@@ -392,9 +395,9 @@ describe('given several @Aspects', () => {
             weaver.enable(new AAspect(), new BAspect());
         });
         it('should call the advices in order of precedence', () => {
-            @AClass()
-            class A implements Labeled {
-                @AProperty()
+            @_AClass()
+            class A implements _Labeled {
+                @_AProperty()
                 labels: string[];
             }
 
@@ -413,18 +416,18 @@ describe('given several @Aspects', () => {
         });
     });
     describe('when the aspects specify an @Order', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect()
             @Order(0)
             class AAspect {
-                @Before(on.class.withAnnotations(AClass))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_beforeClass');
                 }
 
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('A_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
                     labels.push('A_AroundPropertyGet.after');
@@ -434,13 +437,13 @@ describe('given several @Aspects', () => {
             @Order(1)
             @Aspect()
             class BAspect {
-                @Before(on.class.withAnnotations(AClass))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_beforeClass');
                 }
 
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('B_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
                     labels.push('B_AroundPropertyGet.after');
@@ -451,13 +454,13 @@ describe('given several @Aspects', () => {
             @Order(Order.HIGHEST_PRECEDENCE)
             @Aspect()
             class CAspect {
-                @Before(on.class.withAnnotations(AClass))
-                beforeProperty(ctxt: BeforeContext<Labeled, AdviceType.PROPERTY>) {
+                @Before(on.class.withAnnotations(_AClass))
+                beforeProperty(ctxt: BeforeContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('C_beforeClass');
                 }
 
-                @Around(on.property.withAnnotations(AProperty))
-                aroundProperty(ctxt: AroundContext<Labeled, AdviceType.PROPERTY>) {
+                @Around(on.property.withAnnotations(_AProperty))
+                aroundProperty(ctxt: AroundContext<_Labeled, AdviceType.PROPERTY>) {
                     labels.push('C_AroundPropertyGet.before');
                     const r = ctxt.joinpoint();
                     labels.push('C_AroundPropertyGet.after');
@@ -467,9 +470,9 @@ describe('given several @Aspects', () => {
             weaver.enable(new AAspect(), new BAspect(), new CAspect());
         });
         it('should call the advices in order of precedence', () => {
-            @AClass()
-            class A implements Labeled {
-                @AProperty()
+            @_AClass()
+            class A implements _Labeled {
+                @_AProperty()
                 labels: string[];
             }
 

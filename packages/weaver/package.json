@@ -17,7 +17,7 @@
   "sideEffects": false,
   "typings": "dist/weaver.d.ts",
   "scripts": {
-    "build": "tsc -b -v && rollup --config ./rollup.config.js",
+    "build": "tsc -b -v && tsc -b -v testing && rollup --config ./rollup.config.js",
     "clean": "rimraf dist *.tsbuildinfo",
     "typings": "api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
@@ -58,5 +58,9 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "@aspectjs/common": "0.1.4",
+    "@aspectjs/core": "0.1.4"
   }
 }

@@ -1,13 +1,5 @@
-import { ANNOTATIONS, LOCATION } from '@aspectjs/core';
 import { AfterReturn, Aspect } from '@aspectjs/core/annotations';
-import {
-    AfterReturnContext,
-    Annotation,
-    AnnotationContext,
-    AnnotationType,
-    AspectError,
-    on,
-} from '@aspectjs/core/commons';
+import { AfterReturnContext, AdviceError } from '@aspectjs/core';
 import {
     Delete,
     FetchAnnotationType,
@@ -19,7 +11,11 @@ import {
     Put,
     QueryParam,
 } from '@aspectjs/fetch/annotations';
-import { FetchAspectOptions } from 'fetch/annotations/src/types';
+import { on, AnnotationType } from '@aspectjs/common';
+import { assert } from '@aspectjs/common/utils';
+import { FetchAspectOptions } from '../annotations/src/types';
+
+import { ANNOTATIONS, LOCATION, AnnotationContext } from '@aspectjs/reflect';
 
 type PathParamTemplate = {
     placeholder: string;
@@ -116,7 +112,7 @@ export class FetchAspect {
             if (annotation.args[0]) {
                 const paramName = annotation.args[0];
                 if (namedPathParams[paramName]) {
-                    throw new AspectError(
+                    throw new AdviceError(
                         context,
                         `${PathParam} name "${paramName}" is specified for both ${annotation.target.label} & ${namedPathParams[paramName].target.label}`,
                     );
@@ -128,16 +124,16 @@ export class FetchAspect {
         });
 
         const replacePathParam = (url: string, pathParamTemplate: PathParamTemplate, annotation: AnnotationContext) => {
-            assert(pathParamTemplate || annotation);
+            assert(!!(pathParamTemplate || annotation));
             if (!pathParamAnnotations && !annotation) {
                 return url;
             } else if (!annotation && pathParamTemplate) {
-                throw new AspectError(
+                throw new AdviceError(
                     context,
                     `Unbound ${PathParam.name} placeholder: ${pathParamTemplate.placeholder}`,
                 );
             } else if (!pathParamTemplate && annotation) {
-                throw new AspectError(
+                throw new AdviceError(
                     context,
                     `Unbound ${PathParam}(${annotation.args[0] ?? ''}) on ${annotation.target.label}`,
                 );
@@ -157,13 +153,12 @@ export class FetchAspect {
                 paramTemplates.delete(k);
             });
 
-        // apply positionnal @PathParams
+        // apply positional @PathParams
         const remainingParams = [...paramTemplates.values()];
-        positionalPathParams
-            .sort((p1, p2) => p1.target.parameterIndex - p2.target.parameterIndex)
-            .forEach((p) => (request.url = replacePathParam(request.url, remainingParams.shift(), p)));
+        positionalPathParams.sort((p1, p2) => p1.target.parameterIndex - p2.target.parameterIndex);
+        positionalPathParams.forEach((p) => (request.url = replacePathParam(request.url, remainingParams.shift(), p)));
         if (remainingParams.length) {
-            throw new AspectError(
+            throw new AdviceError(
                 context,
                 `Unbound ${PathParam.name} placeholders: ${remainingParams.map((p) => p.placeholder).join(', ')}`,
             );
@@ -194,7 +189,7 @@ export class FetchAspect {
                 });
             } else {
                 const name = this._serialize(annotation.args[0], () => {
-                    throw new AspectError(context, `${QueryParam} on ${annotation.target} does not have a name`);
+                    throw new AdviceError(context, `${QueryParam} on ${annotation.target} does not have a name`);
                 });
 
                 const strValue = this._serializeAnnotatedValue(

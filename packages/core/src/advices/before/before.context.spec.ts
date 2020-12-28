@@ -1,20 +1,16 @@
-import {
-    AClass,
-    AMethod,
-    AParameter,
-    AProperty,
-    BClass,
-    BMethod,
-    BParameter,
-    BProperty,
-    setupTestingWeaverContext,
-} from '@aspectjs/core/testing';
-import { Around, Aspect, Before, Order } from '../../../../annotations/public_api';
-import { AnnotationType } from '../../annotation/annotation.types';
-import { ValuedAnnotationContext } from '../../annotation/context/annotation.context';
-import { JoinPoint, on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType, AroundContext, BeforeContext } from '../types';
+import { Aspect, Before, Order, Around } from '@aspectjs/core/annotations';
+import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParameter, _BProperty } from '@root/testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
+import { ValuedAnnotationContext } from '@aspectjs/reflect';
+import { AnnotationType } from '@aspectjs/common';
+
+import { BeforeContext } from './before.context';
+import { AdviceType } from '../../advice/advice.type';
+import { AroundContext } from '../around/around.context';
+import { on } from '../../advice/pointcut';
+import { JoinPoint } from '../../advice/joinpoint';
+import { AdviceContext } from '../../advice/advice.context.type';
 
 describe('BeforeContext', () => {
     let weaver: Weaver;
@@ -24,7 +20,7 @@ describe('BeforeContext', () => {
     let aroundBAdvice: jasmine.Spy;
 
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
         beforeAAdvice = jasmine.createSpy('beforeAAdvice');
         beforeBAdvice = jasmine.createSpy('beforeBAdvice');
         aroundAAdvice = jasmine.createSpy('aroundAAdvice').and.callFake((_ctxt, jp) => jp());
@@ -38,13 +34,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class ClassAspectA {
                 @Order(1)
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 beforeA(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Around(on.class.withAnnotations(AClass))
+                @Around(on.class.withAnnotations(_AClass))
                 aroundA(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
@@ -52,13 +48,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class ClassAspectB {
                 @Order(2)
-                @Before(on.class.withAnnotations(BClass))
+                @Before(on.class.withAnnotations(_BClass))
                 beforeB(ctxt: BeforeContext<any, AdviceType.PROPERTY>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Around(on.class.withAnnotations(BClass))
+                @Around(on.class.withAnnotations(_BClass))
                 aroundB(ctxt: AroundContext<any, AdviceType.PROPERTY>, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -83,8 +79,8 @@ describe('BeforeContext', () => {
                 beforeBAdvice.and.callFake((ctxt) => pushData(ctxt, 'beforeB'));
             });
             it('should be shared across two @Before advices on the same class', () => {
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
 
@@ -92,11 +88,11 @@ describe('BeforeContext', () => {
             });
 
             it('should not be shared across two @Before advices on different classes', () => {
-                @AClass()
+                @_AClass()
                 class Test1 {}
                 new Test1();
                 expect(data.advices).toEqual(['beforeA']);
-                @BClass()
+                @_BClass()
                 class Test2 {}
                 new Test2();
 
@@ -113,8 +109,8 @@ describe('BeforeContext', () => {
                     return jp();
                 });
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
                 expect(data.advices).toEqual(['aroundA', 'aroundB', 'beforeA', 'beforeB']);
@@ -129,8 +125,8 @@ describe('BeforeContext', () => {
                     expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
                 });
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
             });
@@ -141,8 +137,8 @@ describe('BeforeContext', () => {
                     expect(ctxt.annotations.all().length).toEqual(2);
                 });
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
             });
@@ -153,8 +149,8 @@ describe('BeforeContext', () => {
                     });
                 });
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {}
                 new Test();
             });
@@ -167,13 +163,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @Before(on.property.withAnnotations(AProperty))
+                @Before(on.property.withAnnotations(_AProperty))
                 beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Around(on.property.withAnnotations(AProperty))
+                @Around(on.property.withAnnotations(_AProperty))
                 aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
@@ -181,13 +177,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(2)
-                @Before(on.property.withAnnotations(BProperty))
+                @Before(on.property.withAnnotations(_BProperty))
                 beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Around(on.property.withAnnotations(BProperty))
+                @Around(on.property.withAnnotations(_BProperty))
                 aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -213,8 +209,8 @@ describe('BeforeContext', () => {
             });
             it('should be shared across two @Before advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -225,12 +221,12 @@ describe('BeforeContext', () => {
             });
 
             it('should not be shared across two @Before advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     prop1: any;
 
-                    @BProperty()
+                    @_BProperty()
                     prop2: any;
                 }
                 const t = new Test();
@@ -254,8 +250,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -276,8 +272,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any = 'test';
                 }
 
@@ -292,8 +288,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any = 'test';
                 }
 
@@ -311,8 +307,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -329,13 +325,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @Before(on.property.setter.withAnnotations(AProperty))
+                @Before(on.property.setter.withAnnotations(_AProperty))
                 beforeA(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Around(on.property.setter.withAnnotations(AProperty))
+                @Around(on.property.setter.withAnnotations(_AProperty))
                 aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
@@ -343,13 +339,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(2)
-                @Before(on.property.setter.withAnnotations(BProperty))
+                @Before(on.property.setter.withAnnotations(_BProperty))
                 beforeB(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Around(on.property.setter.withAnnotations(BProperty))
+                @Around(on.property.setter.withAnnotations(_BProperty))
                 aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -375,8 +371,8 @@ describe('BeforeContext', () => {
             });
             it('should be shared across two @Before advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 [beforeAAdvice, beforeBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
@@ -386,12 +382,12 @@ describe('BeforeContext', () => {
             });
 
             it('should not be shared across two @Before advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     prop1: any;
 
-                    @BProperty()
+                    @_BProperty()
                     prop2: any;
                 }
 
@@ -415,8 +411,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
                 [beforeAAdvice, beforeBAdvice, aroundAAdvice, aroundBAdvice].forEach((fn) =>
@@ -436,8 +432,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any = 'test';
                 }
 
@@ -454,8 +450,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any = 'test';
                 }
 
@@ -476,8 +472,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     prop: any;
                 }
 
@@ -494,13 +490,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @Before(on.method.withAnnotations(AMethod))
+                @Before(on.method.withAnnotations(_AMethod))
                 beforeA(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Around(on.method.withAnnotations(AMethod))
+                @Around(on.method.withAnnotations(_AMethod))
                 aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
@@ -508,13 +504,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(2)
-                @Before(on.method.withAnnotations(BMethod))
+                @Before(on.method.withAnnotations(_BMethod))
                 beforeB(ctxt: BeforeContext<any, AdviceType.METHOD>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Around(on.method.withAnnotations(BMethod))
+                @Around(on.method.withAnnotations(_BMethod))
                 aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -541,8 +537,8 @@ describe('BeforeContext', () => {
 
             it('should be shared across two @Before advices on the same method', () => {
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     someMethod(): any {}
                 }
                 [beforeAAdvice, beforeBAdvice].forEach((fn) => expect(fn).not.toHaveBeenCalled());
@@ -553,12 +549,12 @@ describe('BeforeContext', () => {
             });
 
             it('should not be shared across two @Before advices on different method', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AMethod()
+                    @_AMethod()
                     method1(): any {}
 
-                    @BMethod()
+                    @_BMethod()
                     method2(): any {}
                 }
 
@@ -582,8 +578,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
 
@@ -600,8 +596,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
 
@@ -616,8 +612,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
 
@@ -637,8 +633,8 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {}
                 }
 
@@ -655,13 +651,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Order(1)
-                @Before(on.parameter.withAnnotations(AParameter))
+                @Before(on.parameter.withAnnotations(_AParameter))
                 beforeA(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @Around(on.parameter.withAnnotations(AParameter))
+                @Around(on.parameter.withAnnotations(_AParameter))
                 aroundA(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundAAdvice(ctxt, jp);
                 }
@@ -669,13 +665,13 @@ describe('BeforeContext', () => {
             @Aspect()
             class ParameterAspectB {
                 @Order(2)
-                @Before(on.parameter.withAnnotations(BParameter))
+                @Before(on.parameter.withAnnotations(_BParameter))
                 beforeB(ctxt: BeforeContext<any, AdviceType.PARAMETER>): void {
                     beforeBAdvice(ctxt);
                 }
 
                 @Order(2)
-                @Around(on.parameter.withAnnotations(BParameter))
+                @Around(on.parameter.withAnnotations(_BParameter))
                 aroundB(ctxt: AroundContext, jp: JoinPoint): void {
                     aroundBAdvice(ctxt, jp);
                 }
@@ -701,7 +697,7 @@ describe('BeforeContext', () => {
             });
             it('should be shared across two @Before advices on the same parameter', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('');
@@ -711,7 +707,7 @@ describe('BeforeContext', () => {
 
             it('should not be shared across two @Before advices on different parameters', () => {
                 class Test {
-                    someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {}
+                    someMethod(@_AParameter() paramA: any, @_BParameter() paramB: any): any {}
                 }
                 new Test().someMethod('', '');
 
@@ -729,7 +725,7 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('');
@@ -743,7 +739,7 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('argValue');
@@ -757,7 +753,7 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 new Test().someMethod('argValue');
@@ -775,7 +771,7 @@ describe('BeforeContext', () => {
                 });
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {}
+                    someMethod(@_AParameter() @_BParameter() param: any): any {}
                 }
 
                 [beforeAAdvice, beforeBAdvice].forEach((f) => expect(f).not.toHaveBeenCalled());

@@ -3,19 +3,19 @@
   "include": [
     "src/**/*.ts",
     "public_api.ts",
-    "node_modules/@types/node/globals.d.ts"
+    "node_modules/@types/node/globals.d.ts",
   ],
   "exclude": [
     "**/*.spec.ts",
     "**/dist",
     "**/rollup.config.ts"
   ],
-
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist"
   },
   "references": [
-    { "path": "./annotations" },
+    { "path": "../common" },
+    { "path": "../reflect" }
   ]
 }

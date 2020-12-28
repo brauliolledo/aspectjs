@@ -1,5 +1,5 @@
 import { AfterReturn, Aspect } from '@aspectjs/core/annotations';
-import { AfterReturnContext, AspectType, on, WeaverProfile, WeavingError } from '@aspectjs/core/commons';
+import { AfterReturnContext, AspectType, on, WeaverProfile, WeavingError } from '@aspectjs/common';
 import { Memo, MemoAspect } from '@aspectjs/memo';
 
 import { isObservable } from 'rxjs';

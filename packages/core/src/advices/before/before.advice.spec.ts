@@ -1,10 +1,12 @@
 import { Aspect, Before } from '@aspectjs/core/annotations';
-import { AClass, AMethod, AParameter, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType } from '../types';
+import { Weaver } from '@aspectjs/weaver';
+import { _AClass, _AMethod, _AParameter, _AProperty, _Labeled } from '@root/testing';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
 import { BeforeContext } from './before.context';
 import Spy = jasmine.Spy;
+import { AdviceType } from '../../advice/advice.type';
+import { on } from '../../advice/pointcut';
+import { AdviceContext } from '../../advice/advice.context.type';
 
 describe('@Before advice', () => {
     let advice: Spy;
@@ -13,7 +15,7 @@ describe('@Before advice', () => {
 
     beforeEach(() => {
         advice = jasmine.createSpy('advice');
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
 
     describe('applied on a class', () => {
@@ -23,7 +25,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.class.withAnnotations(AClass))
+                @Before(on.class.withAnnotations(_AClass))
                 applyBefore(ctxt: BeforeContext<any, AdviceType.CLASS>): void {
                     thisInstance = ctxt.instance;
 
@@ -40,7 +42,7 @@ describe('@Before advice', () => {
                 expect(this).toEqual(jasmine.any(aspectClass));
             });
 
-            @AClass()
+            @_AClass()
             class A {}
 
             new A();
@@ -48,7 +50,7 @@ describe('@Before advice', () => {
         });
 
         it('should call the aspect before the constructor', () => {
-            @AClass()
+            @_AClass()
             class A {
                 constructor() {
                     ctor();
@@ -62,7 +64,7 @@ describe('@Before advice', () => {
         });
 
         it('should have a "null" context.instance', () => {
-            @AClass()
+            @_AClass()
             class A {
                 constructor() {}
             }
@@ -74,7 +76,7 @@ describe('@Before advice', () => {
         it(`should keep constructor's "toString()" method`, () => {
             let advisedClass: any;
             {
-                @AClass()
+                @_AClass()
                 class A {
                     constructor() {
                         console.log('original constructor');
@@ -85,7 +87,7 @@ describe('@Before advice', () => {
             }
             let nonAdvisedClass: any;
             {
-                @AClass()
+                @_AClass()
                 class A {
                     constructor() {
                         console.log('original constructor');
@@ -103,13 +105,13 @@ describe('@Before advice', () => {
     });
 
     describe('applied on a property', () => {
-        let a: Labeled;
+        let a: _Labeled;
 
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
                 constructor() {}
-                @Before(on.property.withAnnotations(AProperty))
+                @Before(on.property.withAnnotations(_AProperty))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);
                 }
@@ -118,8 +120,8 @@ describe('@Before advice', () => {
 
             weaver.enable(new AAspect());
 
-            class A implements Labeled {
-                @AProperty()
+            class A implements _Labeled {
+                @_AProperty()
                 labels: string[] = [];
             }
 
@@ -152,12 +154,12 @@ describe('@Before advice', () => {
     });
 
     describe('applied on a property setter', () => {
-        let a: Labeled;
+        let a: _Labeled;
 
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.property.setter.withAnnotations(AProperty))
+                @Before(on.property.setter.withAnnotations(_AProperty))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.PROPERTY>): void {
                     advice.bind(this)(ctxt);
                 }
@@ -166,8 +168,8 @@ describe('@Before advice', () => {
 
             weaver.enable(new AAspect());
 
-            class A implements Labeled {
-                @AProperty()
+            class A implements _Labeled {
+                @_AProperty()
                 labels: string[] = [];
             }
 
@@ -206,7 +208,7 @@ describe('@Before advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AAspect {
-                @Before(on.method.withAnnotations(AMethod))
+                @Before(on.method.withAnnotations(_AMethod))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
                     advice.bind(this)(ctxt);
                 }
@@ -216,7 +218,7 @@ describe('@Before advice', () => {
             weaver.enable(new AAspect());
 
             class A {
-                @AMethod()
+                @_AMethod()
                 addLabel(): any {}
             }
 
@@ -251,19 +253,19 @@ describe('@Before advice', () => {
         });
 
         it(`should keep property's "toString()" method`, () => {
-            let advisedInstance: Labeled;
+            let advisedInstance: _Labeled;
             {
-                class A implements Labeled {
-                    @AMethod()
+                class A implements _Labeled {
+                    @_AMethod()
                     addLabel(): any {
                         console.log('addLabels');
                     }
                 }
                 advisedInstance = new A();
             }
-            let nonAdvisedInstance: Labeled;
+            let nonAdvisedInstance: _Labeled;
             {
-                class A implements Labeled {
+                class A implements _Labeled {
                     addLabel(): any {
                         console.log('addLabels');
                     }
@@ -278,12 +280,12 @@ describe('@Before advice', () => {
     });
 
     describe('applied on a method parameter', () => {
-        let a: Labeled;
+        let a: _Labeled;
         let methodSpy: jasmine.Spy;
         beforeEach(() => {
             @Aspect()
             class AAspect {
-                @Before(on.parameter.withAnnotations(AParameter))
+                @Before(on.parameter.withAnnotations(_AParameter))
                 applyBefore(ctxt: AdviceContext<any, AdviceType.PARAMETER>): void {
                     advice.bind(this)(ctxt);
                 }
@@ -293,7 +295,7 @@ describe('@Before advice', () => {
             weaver.enable(new AAspect());
 
             class A {
-                addLabel(@AParameter() param: any): any {
+                addLabel(@_AParameter() param: any): any {
                     methodSpy();
                 }
             }
@@ -332,7 +334,7 @@ describe('@Before advice', () => {
     });
 
     describe('applied on both a method & parameter ', () => {
-        let a: Labeled;
+        let a: _Labeled;
         let methodSpy: jasmine.Spy;
         let methodAdvice: jasmine.Spy;
         let parameterAdvice: jasmine.Spy;
@@ -342,11 +344,11 @@ describe('@Before advice', () => {
 
             @Aspect()
             class AAspect {
-                @Before(on.parameter.withAnnotations(AParameter))
+                @Before(on.parameter.withAnnotations(_AParameter))
                 applyBeforeParameter(ctxt: AdviceContext<any, AdviceType.PARAMETER>): void {
                     parameterAdvice.bind(this)(ctxt);
                 }
-                @Before(on.method.withAnnotations(AMethod))
+                @Before(on.method.withAnnotations(_AMethod))
                 applyBeforeMethod(ctxt: AdviceContext<any, AdviceType.METHOD>): void {
                     methodAdvice.bind(this)(ctxt);
                 }
@@ -355,8 +357,8 @@ describe('@Before advice', () => {
             weaver.enable(new AAspect());
 
             class A {
-                @AMethod()
-                addLabel(@AParameter() param: any): any {
+                @_AMethod()
+                addLabel(@_AParameter() param: any): any {
                     methodSpy();
                 }
             }

@@ -6,7 +6,7 @@ import { assert } from '@aspectjs/common/utils';
 /**
  * @public
  */
-export enum AnnotationType { // TODO use binary-mask values
+export enum AnnotationType {
     CLASS = 0b0001,
     PROPERTY = 0b0010,
     METHOD = 0b0100,

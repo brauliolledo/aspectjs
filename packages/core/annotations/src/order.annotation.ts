@@ -1,4 +1,4 @@
-import { ASPECTJS_ANNOTATION_FACTORY, AnnotationRef, Decorator } from '@aspectjs/core/commons';
+import { ASPECTJS_ANNOTATION_FACTORY, AnnotationRef, Decorator } from '@aspectjs/common';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
 AnnotationRef;

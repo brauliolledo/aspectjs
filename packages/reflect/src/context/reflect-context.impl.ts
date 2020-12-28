@@ -33,15 +33,16 @@ export class ReflectContextImpl implements ReflectContext {
             targetFactory,
         };
         // add annotation factory hook to register annotations
-        AnnotationFactory.bootstrapDecorators.set(
-            '@aspectjs::registerAnnotation',
-            (annotation, _stub, annotationArgs) => {
+        AnnotationFactory.addBootstrapModule({
+            name: '@aspectjs::registerAnnotation',
+            decorator: (annotation, _stub, annotationArgs) => {
                 return (...targetArgs: any[]) => {
                     const target = targetFactory.of(targetArgs);
                     const annotationContext = new _AnnotationContextImpl(target, annotationArgs, annotation);
                     registry.register(annotationContext);
                 };
             },
-        );
+            order: 10,
+        });
     }
 }

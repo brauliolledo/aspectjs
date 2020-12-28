@@ -34,7 +34,7 @@ npm install --save reflect-metadata
 ### Example
 
 ```javascript
-import { AnnotationFactory, BeforeContext, on, AnnotationType } from '@aspectjs/core/commons';
+import { AnnotationFactory, BeforeContext, on, AnnotationType } from '@aspectjs/common';
 import { Aspect, Before, Order } from '@aspectjs/core/annotations';
 import { WEAVER } from '@aspectjs/core';
 

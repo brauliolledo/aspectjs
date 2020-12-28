@@ -1,6 +1,6 @@
-import { AnnotationsBundle } from '../../annotation/bundle/bundle';
-import { AdviceTarget } from '../../annotation/target/annotation-target';
-import { Advice, AdviceType } from '../types';
+import { AdviceTarget, AnnotationsBundle } from '@aspectjs/reflect';
+import { AdviceType } from '../../advice/advice.type';
+import { Advice } from '../types';
 
 /**
  * @public

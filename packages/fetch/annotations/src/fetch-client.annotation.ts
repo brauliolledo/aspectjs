@@ -1,4 +1,4 @@
-import { AnnotationRef, ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/core/commons';
+import { AnnotationRef, ASPECTJS_ANNOTATION_FACTORY } from '@aspectjs/common';
 import { FetchClientInit } from './types';
 
 // TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved

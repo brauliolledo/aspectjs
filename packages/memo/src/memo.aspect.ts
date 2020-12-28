@@ -1,6 +1,7 @@
 import { Around, Aspect } from '@aspectjs/core/annotations';
-import { AroundContext, AspectError, AspectType, BeforeContext, JoinPoint, on } from '@aspectjs/core/commons';
 import { getOrComputeMetadata, getProto, isFunction, isString, isUndefined } from '@aspectjs/common/utils';
+import { AdviceError, AroundContext, AspectError, AspectType, BeforeContext, JoinPoint, on } from '@aspectjs/core';
+
 import copy from 'fast-copy';
 
 import { stringify } from 'flatted';
@@ -297,7 +298,7 @@ function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: Arou
         if (isString(annotationOptions.driver)) {
             const candidates = Object.values(drivers).filter((d) => d.NAME === annotationOptions.driver);
             if (!candidates.length) {
-                throw new AspectError(
+                throw new AdviceError(
                     ctxt,
                     `No candidate driver available for driver name "${annotationOptions.driver}"`,
                 );
@@ -307,14 +308,14 @@ function _selectCandidateDrivers(drivers: Record<string, MemoDriver>, ctxt: Arou
         } else if (isFunction(annotationOptions.driver)) {
             const candidates = Object.values(drivers).filter((d) => d.constructor === annotationOptions.driver);
             if (!candidates.length) {
-                throw new AspectError(
+                throw new AdviceError(
                     ctxt,
                     `No candidate driver available for driver "${annotationOptions.driver?.name}"`,
                 );
             }
             return candidates;
         } else {
-            throw new AspectError(
+            throw new AdviceError(
                 ctxt,
                 `driver option should be a string or a Driver constructor. Got: ${annotationOptions.driver}`,
             );

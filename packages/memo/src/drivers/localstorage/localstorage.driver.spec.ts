@@ -1,4 +1,4 @@
-import { BeforeContext } from '@aspectjs/core/commons';
+import { BeforeContext } from '@aspectjs/common';
 
 import moment from 'moment';
 

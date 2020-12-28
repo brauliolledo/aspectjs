@@ -1,7 +1,15 @@
 import { AnnotationType } from '@aspectjs/common';
 import { assert, getProto, locator } from '@aspectjs/common/utils';
 import { AnnotationContextRegistry } from '../context/annotation-context.registry';
-import { AnnotationTarget, ClassAdviceTarget } from '../target/annotation-target';
+import { AnnotationContext } from '../context/annotation.context';
+import {
+    AdviceTarget,
+    AnnotationTarget,
+    ClassAdviceTarget,
+    MethodAdviceTarget,
+    ParameterAdviceTarget,
+    PropertyAdviceTarget,
+} from '../target/annotation-target';
 import { AnnotationTargetFactory, RuntimeTargetContext } from '../target/annotation-target.factory';
 import { AnnotationLocation, ClassAnnotationLocation } from './annotation-location';
 
@@ -9,24 +17,17 @@ import { AnnotationLocation, ClassAnnotationLocation } from './annotation-locati
  * @public
  */
 export class AnnotationLocationFactory {
-    private _locationCache = new Map<string, _AnnotationLocationImpl<any>>();
+    private _locationCache = new Map<string, _AnnotationLocationImpl<unknown>>();
     constructor(
         private _targetFactory: AnnotationTargetFactory,
         private _annotationContextRegistry: AnnotationContextRegistry,
     ) {}
-
     of<T>(obj: { new (...args: any[]): T } | T): ClassAnnotationLocation<T> {
         const proto = getProto(obj);
         if (proto === Object.prototype) {
             throw new TypeError('given object is neither a constructor nor a class instance');
         }
 
-        const target = this._targetFactory.create({
-            proto,
-            type: AnnotationType.CLASS,
-        }).declaringClass as ClassAdviceTarget<T>;
-
-        const annotations = this._annotationContextRegistry.byTargetClassRef[target.ref]?.all ?? [];
         const runtimeContext: RuntimeTargetContext<T> =
             obj !== proto && obj !== proto.constructor
                 ? {
@@ -34,57 +35,48 @@ export class AnnotationLocationFactory {
                   }
                 : undefined;
 
+        const target = this._targetFactory.create({
+            proto,
+            type: AnnotationType.CLASS,
+        }).declaringClass as ClassAdviceTarget<T>;
+
+        const location = this.ofTarget(target);
+
+        return _AnnotationLocationImpl.unwrap(location).bindRuntimeContext(runtimeContext)
+            .location as ClassAnnotationLocation;
+    }
+
+    ofTarget<T = unknown, A extends AnnotationType = any>(target: AdviceTarget<T, A>): AnnotationLocation<T> {
         const locationImpl = locator(this._locationCache)
             .at(target.ref)
             .orElseCompute(() => {
-                return annotations.reduce((loc, annotation) => {
-                    const annotationTarget = annotation.target;
-                    if (~annotationTarget.type & AnnotationType.CLASS) {
-                        if (annotationTarget.type & (AnnotationType.METHOD | AnnotationType.PARAMETER)) {
-                            // create location for the method
-                            const methodAnnotationTarget = this._targetFactory.create({
-                                ...(annotationTarget as any),
-                                type: AnnotationType.METHOD,
-                            });
-
-                            (loc.location as any)[methodAnnotationTarget.propertyKey] =
-                                (loc.location as any)[methodAnnotationTarget.propertyKey] ??
-                                new _AnnotationLocationImpl(methodAnnotationTarget, {}, runtimeContext).location;
-
-                            // create location for all parameters
-                            const allParamsAnnotationTarget = this._targetFactory.create({
-                                ...annotationTarget,
-                                parameterIndex: NaN,
-                            });
-                            (loc.location as any)[annotationTarget.propertyKey].args =
-                                (loc.location as any)[annotationTarget.propertyKey].args ??
-                                new _AnnotationLocationImpl(allParamsAnnotationTarget, [], runtimeContext).location;
-
-                            // if target is one parameter
-                            if (annotationTarget.type & AnnotationType.PARAMETER) {
-                                // create location for the given parameter
-
-                                (loc.location as any)[annotationTarget.propertyKey].args[
-                                    annotationTarget.parameterIndex
-                                ] = new _AnnotationLocationImpl(annotationTarget, {}, runtimeContext).location;
-                            }
-                        } else {
-                            // if target is a property
-                            assert(annotationTarget.type === AnnotationType.PROPERTY);
-                            const propertyAnnotationTarget = this._targetFactory.create({
-                                ...(annotationTarget as any),
-                                type: AnnotationType.METHOD,
-                            });
-
-                            (loc.location as any)[propertyAnnotationTarget.propertyKey] =
-                                (loc.location as any)[propertyAnnotationTarget.propertyKey] ??
-                                new _AnnotationLocationImpl(propertyAnnotationTarget, {}, runtimeContext).location;
-                        }
-                    }
-                    return loc;
-                }, new _AnnotationLocationImpl<T, AnnotationType.CLASS>(target, {}, runtimeContext));
+                return [
+                    ...(this._annotationContextRegistry.byTargetClassRef[target.ref]?.all ?? [])
+                        .reduce((annotations, annotation) => {
+                            // keep one context per target
+                            annotations.set(annotation.target.ref, annotation);
+                            return annotations;
+                        }, new Map<string, AnnotationContext>())
+                        .values(),
+                ]
+                    .map((a) => a.target)
+                    .filter((annotationTarget) => ~annotationTarget.type & AnnotationType.CLASS)
+                    .reduce(
+                        (
+                            loc,
+                            annotationTarget:
+                                | MethodAdviceTarget<T>
+                                | ParameterAdviceTarget<T>
+                                | PropertyAdviceTarget<T>,
+                        ) => {
+                            loc.addChildLocation(annotationTarget, this._targetFactory);
+                            return loc;
+                        },
+                        new _AnnotationLocationImpl<T, A>(target, {}),
+                    );
             });
-        return locationImpl.location as ClassAnnotationLocation;
+
+        return locationImpl.location;
     }
 }
 
@@ -93,6 +85,7 @@ export class _AnnotationLocationImpl<T, A extends AnnotationType = any> {
         public readonly target: AnnotationTarget<T, A>,
         public location: AnnotationLocation<T>,
         private _runtimeContext?: RuntimeTargetContext<T>,
+        private _parent?: _AnnotationLocationImpl<T>,
     ) {
         Reflect.defineMetadata('@aspectjs::locationImpl', this, this.location);
     }
@@ -103,19 +96,84 @@ export class _AnnotationLocationImpl<T, A extends AnnotationType = any> {
     }
 
     getRuntimeContext(): RuntimeTargetContext<T> {
-        if (!this.isBound()) {
+        const rt = this._runtimeContext ?? this._parent?.getRuntimeContext();
+
+        if (!rt) {
             throw new TypeError('location is not bound to a runtime context');
         }
-        return this._runtimeContext;
+
+        return rt;
     }
 
     isBound(): boolean {
-        return !!this._runtimeContext;
+        return !!(this._runtimeContext ?? this._parent?.isBound());
+    }
+
+    addChildLocation(
+        target: MethodAdviceTarget<T> | PropertyAdviceTarget<T> | ParameterAdviceTarget<T>,
+        targetFactory: AnnotationTargetFactory,
+    ): void {
+        if (target.type & (AnnotationType.METHOD | AnnotationType.PARAMETER)) {
+            if ((this.location as any)[target.propertyKey] === undefined) {
+                // create location for the method
+                (this.location as any)[target.propertyKey] = new _AnnotationLocationImpl(
+                    targetFactory.create<T, AnnotationType.METHOD>({
+                        ...(target as any),
+                        type: AnnotationType.METHOD,
+                    }),
+                    {},
+                    this._runtimeContext,
+                    this,
+                ).location;
+            }
+
+            if ((this.location as any)[target.propertyKey].args === undefined) {
+                // create location for all parameters
+
+                (this.location as any)[target.propertyKey].args = new _AnnotationLocationImpl(
+                    targetFactory.create<T, AnnotationType.PARAMETER>({
+                        ...(target as any),
+                        parameterIndex: NaN,
+                    }),
+                    [] as AnnotationLocation<T>,
+                    this._runtimeContext,
+                    this,
+                ).location;
+            }
+
+            // if target is one parameter
+            if (target.type & AnnotationType.PARAMETER) {
+                // create location for the given parameter
+
+                if ((this.location as any)[target.propertyKey].args[target.parameterIndex] === undefined) {
+                    (this.location as any)[target.propertyKey].args[
+                        target.parameterIndex
+                    ] = new _AnnotationLocationImpl(target, {}, this._runtimeContext, this).location;
+                }
+            }
+        } else {
+            // if target is a property
+            if ((this.location as any)[target.propertyKey] === undefined) {
+                assert(target.type === AnnotationType.PROPERTY);
+                (this.location as any)[target.propertyKey] = new _AnnotationLocationImpl(
+                    targetFactory.create<T, AnnotationType.PROPERTY>({
+                        ...(target as any),
+                        type: AnnotationType.METHOD,
+                    }),
+                    {},
+                    this._runtimeContext,
+                    this,
+                ).location;
+            }
+        }
     }
 
     static unwrap<T, A extends AnnotationType>(location: AnnotationLocation<T, A>): _AnnotationLocationImpl<T, A> {
-        assert(!!location);
+        assert(location !== undefined);
 
+        if (location instanceof _AnnotationLocationImpl) {
+            return location;
+        }
         const impl = Reflect.getOwnMetadata('@aspectjs::locationImpl', location);
         assert(!!impl);
 

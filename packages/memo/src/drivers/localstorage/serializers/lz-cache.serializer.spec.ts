@@ -1,4 +1,4 @@
-import { setupTestingWeaverContext } from '@aspectjs/core-testing';
+import { setupTestingWeaverContext } from '@aspectjs/core/testing';
 
 import { LsMemoDriver } from '../localstorage.driver';
 import { LzMemoSerializer } from './lz-memo.serializer';

@@ -1,10 +1,13 @@
 import { AfterThrow, Aspect, Compile } from '@aspectjs/core/annotations';
-import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
+import { Weaver } from '@aspectjs/weaver';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { _AClass, _AMethod, _AProperty, _Labeled } from '@root/testing';
 
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType, AfterThrowContext, CompileContext } from '../types';
 import Spy = jasmine.Spy;
+import { AfterThrowContext } from './after-throw.context';
+import { AdviceType } from '../../advice/advice.type';
+import { on } from '../../advice/pointcut';
+import { AdviceContext, CompileContext } from '../../advice/advice.context.type';
 
 const thrownError = new Error('expected');
 
@@ -16,14 +19,14 @@ describe('@AfterThrow advice', () => {
     beforeEach(() => {
         advice = jasmine.createSpy('advice', function () {}).and.callThrough();
         adviceError = undefined;
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
 
     describe('configured on some class', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AfterThrowAspect {
-                @AfterThrow(on.class.withAnnotations(AClass))
+                @AfterThrow(on.class.withAnnotations(_AClass))
                 apply(ctxt: AfterThrowContext<any, AdviceType.CLASS>, error: Error): void {
                     expect(error).toEqual(ctxt.error);
                     adviceError = error;
@@ -41,15 +44,15 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('afterThrowAdvice')
-                        .and.callFake(function (ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>, error: Error) {
+                        .and.callFake(function (ctxt: AfterThrowContext<_Labeled, AdviceType.CLASS>, error: Error) {
                             ctxt.instance.labels = ctxt.instance.labels ?? [];
                             ctxt.instance.labels.push('A');
 
                             throw ctxt.error;
                         });
 
-                    @AClass()
-                    class A_ implements Labeled {
+                    @_AClass()
+                    class A_ implements _Labeled {
                         public labels: string[];
 
                         constructor(label: string) {
@@ -91,15 +94,15 @@ describe('@AfterThrow advice', () => {
                     beforeEach(() => {
                         advice = jasmine
                             .createSpy('afterThrowAdvice')
-                            .and.callFake((ctxt: AfterThrowContext<Labeled, AdviceType.CLASS>) => {
+                            .and.callFake((ctxt: AfterThrowContext<_Labeled, AdviceType.CLASS>) => {
                                 ctxt.instance.labels = ctxt.instance.labels ?? [];
                                 ctxt.instance.labels.push('A');
                             });
                     });
 
                     it('should not throw', () => {
-                        @AClass()
-                        class A implements Labeled {
+                        @_AClass()
+                        class A implements _Labeled {
                             public labels: string[];
 
                             constructor(label: string) {
@@ -125,7 +128,7 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     advice = jasmine
                         .createSpy('afterThrowAdvice')
-                        .and.callFake((ctxt: AdviceContext<Labeled, AdviceType.CLASS>) => {
+                        .and.callFake((ctxt: AdviceContext<_Labeled, AdviceType.CLASS>) => {
                             return Object.assign(Object.create(ctxt.target.proto), {
                                 labels: ['ABis'],
                             });
@@ -133,8 +136,8 @@ describe('@AfterThrow advice', () => {
                 });
 
                 it('should assign "this" instance to the returned value', () => {
-                    @AClass()
-                    class A implements Labeled {
+                    @_AClass()
+                    class A implements _Labeled {
                         public labels: string[];
 
                         constructor(label: string) {
@@ -151,8 +154,8 @@ describe('@AfterThrow advice', () => {
 
             describe('with a constructor that do not throws', () => {
                 it('should call not the aspect', () => {
-                    @AClass()
-                    class A implements Labeled {
+                    @_AClass()
+                    class A implements _Labeled {
                         public labels: string[];
 
                         constructor(label: string) {
@@ -172,7 +175,7 @@ describe('@AfterThrow advice', () => {
         beforeEach(() => {
             @Aspect('PropertyThrow')
             class PropertyThrowAspect {
-                @Compile(on.property.withAnnotations(AProperty))
+                @Compile(on.property.withAnnotations(_AProperty))
                 compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
                     return {
                         get() {
@@ -187,7 +190,7 @@ describe('@AfterThrow advice', () => {
 
             @Aspect('APropertyLabel')
             class AfterThrowAspect {
-                @AfterThrow(on.property.withAnnotations(AProperty))
+                @AfterThrow(on.property.withAnnotations(_AProperty))
                 afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
                     advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
@@ -197,15 +200,15 @@ describe('@AfterThrow advice', () => {
             _PropertyThrowAspect = PropertyThrowAspect;
             _AfterThrowAspect = AfterThrowAspect;
         });
-        let a: Labeled;
+        let a: _Labeled;
 
         describe('getting this property', () => {
             describe('with a descriptor that do not throws', () => {
                 beforeEach(() => {
                     weaver.enable(new _AfterThrowAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[] = [];
                     }
 
@@ -226,8 +229,8 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     weaver.enable(new _AfterThrowAspect(), new _PropertyThrowAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[] = [];
                     }
 
@@ -259,7 +262,7 @@ describe('@AfterThrow advice', () => {
                 it('should use the returned value', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.withAnnotations(AProperty))
+                        @AfterThrow(on.property.withAnnotations(_AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
@@ -267,8 +270,8 @@ describe('@AfterThrow advice', () => {
 
                     weaver.enable(new _PropertyThrowAspect(), new ReturnNewValueAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[];
                     }
 
@@ -285,7 +288,7 @@ describe('@AfterThrow advice', () => {
         beforeEach(() => {
             @Aspect('PropertyThrow')
             class PropertyThrowAspect {
-                @Compile(on.property.withAnnotations(AProperty))
+                @Compile(on.property.withAnnotations(_AProperty))
                 compile(ctxt: CompileContext<any, AdviceType.PROPERTY>): PropertyDescriptor {
                     return {
                         get() {
@@ -301,7 +304,7 @@ describe('@AfterThrow advice', () => {
 
             @Aspect('APropertyLabel')
             class AfterThrowAspect {
-                @AfterThrow(on.property.setter.withAnnotations(AProperty))
+                @AfterThrow(on.property.setter.withAnnotations(_AProperty))
                 afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): void {
                     advice(ctxt, error);
                     return Reflect.getOwnMetadata(ctxt.target.propertyKey, ctxt.instance);
@@ -312,15 +315,15 @@ describe('@AfterThrow advice', () => {
             _AfterThrowAspect = AfterThrowAspect;
         });
 
-        let a: Labeled;
+        let a: _Labeled;
 
         describe('setting this property', () => {
             describe('with a descriptor that do not throws', () => {
                 beforeEach(() => {
                     weaver.enable(new _AfterThrowAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[];
                     }
 
@@ -342,8 +345,8 @@ describe('@AfterThrow advice', () => {
                 beforeEach(() => {
                     weaver.enable(new _AfterThrowAspect(), new _PropertyThrowAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[];
                     }
 
@@ -386,7 +389,7 @@ describe('@AfterThrow advice', () => {
                 it('should throw an error', () => {
                     @Aspect('APropertyLabel')
                     class ReturnNewValueAspect {
-                        @AfterThrow(on.property.setter.withAnnotations(AProperty))
+                        @AfterThrow(on.property.setter.withAnnotations(_AProperty))
                         afterThrow(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>, error: Error): any {
                             return ['newValue'];
                         }
@@ -394,8 +397,8 @@ describe('@AfterThrow advice', () => {
 
                     weaver.enable(new _PropertyThrowAspect(), new ReturnNewValueAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[];
                     }
 
@@ -404,7 +407,7 @@ describe('@AfterThrow advice', () => {
                         a.labels = [];
                     }).toThrow(
                         new Error(
-                            '@AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow(): Returning from advice is not supported',
+                            'Error applying advice @AfterThrow(@AProperty) ReturnNewValueAspect.afterThrow() on property "A.labels": Returning from advice is not supported',
                         ),
                     );
                 });
@@ -413,11 +416,11 @@ describe('@AfterThrow advice', () => {
     });
 
     describe('applied on a method', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect('AfterThrowAspect')
             class AfterThrowAspect {
-                @AfterThrow(on.method.withAnnotations(AMethod))
+                @AfterThrow(on.method.withAnnotations(_AMethod))
                 afterThrow(ctxt: AfterThrowContext<any, AdviceType.METHOD>, error: Error): void {
                     return advice(ctxt, error);
                 }
@@ -435,10 +438,10 @@ describe('@AfterThrow advice', () => {
         describe('calling the method', () => {
             describe('when the method do not throws', () => {
                 beforeEach(() => {
-                    class A implements Labeled {
+                    class A implements _Labeled {
                         public labels: string[];
 
-                        @AMethod()
+                        @_AMethod()
                         addLabel() {}
                     }
 
@@ -453,11 +456,11 @@ describe('@AfterThrow advice', () => {
 
             describe('when the method throws', () => {
                 beforeEach(() => {
-                    class A implements Labeled {
+                    class A implements _Labeled {
                         public labels: string[];
 
-                        @AMethod()
-                        addLabel() {
+                        @_AMethod()
+                        addLabel(): string[] {
                             throw new Error('expected');
                         }
                     }

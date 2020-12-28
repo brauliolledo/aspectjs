@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Cacheable, Memo } from '@aspectjs/memo';
-import { AnnotationFactory } from '@aspectjs/core/commons';
+import { AnnotationFactory } from '@aspectjs/common';
 
 @Cacheable()
 class User {}

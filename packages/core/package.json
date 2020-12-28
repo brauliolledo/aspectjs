@@ -20,7 +20,7 @@
   "sideEffects": false,
   "typings": "dist/core.d.ts",
   "scripts": {
-    "build": "tsc -b -v && tsc -b -v testing && rollup --config ./rollup.config.js",
+    "build": "tsc -b -v && tsc -b -v annotations && tsc -b -v testing && rollup --config ./rollup.config.js",
     "clean": "rimraf dist *.tsbuildinfo",
     "typings": "api-extractor run --local --verbose",
     "test": "nyc jasmine --config=jasmine.json",
@@ -37,9 +37,7 @@
     "*/package.json",
     "core.d.ts",
     "core-testing.d.ts",
-    "core-utils.d.ts",
-    "core-annotations.d.ts",
-    "core-commons.d.ts"
+    "core-annotations.d.ts"
   ],
   "directories": {
     "lib": "src",
@@ -52,6 +50,11 @@
   "bugs": {
     "url": "https://github.com/NicolasThierion/aspectjs/issues"
   },
+  "peerDependencies": {
+    "@aspectjs/reflect": "0.1.4",
+    "@aspectjs/weaver": "0.1.4"
+  },
+
   "devDependencies": {
     "@size-limit/preset-big-lib": "^4.5.4",
     "size-limit": "^4.5.4"
@@ -60,10 +63,7 @@
     {
       "limit": "400 ms",
       "path": [
-        "dist/bundles/core.umd.min.js",
-        "commons/dist/bundles/commons.umd.min.js",
-        "utils/dist/bundles/utils.umd.min.js",
-        "annotations/dist/bundles/annotations.umd.min.js"
+        "dist/bundles/core.umd.min.js"
       ]
     }
   ],

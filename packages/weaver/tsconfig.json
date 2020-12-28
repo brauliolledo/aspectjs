@@ -3,7 +3,7 @@
   "include": [
     "src/**/*.ts",
     "public_api.ts",
-    "node_modules/@types/node/globals.d.ts"
+    "node_modules/@types/node/globals.d.ts",
   ],
   "exclude": [
     "**/*.spec.ts",
@@ -17,8 +17,10 @@
     "experimentalDecorators": true
   },
   "references": [
-    { "path": "./commons" },
-    { "path": "./annotations" },
-    { "path": "./utils" }
+    { "path": "../common" },
+    { "path": "../common/utils" },
+    { "path": "../reflect" },
+    { "path": "../core" },
+    { "path": "../core/annotations" },
   ]
 }

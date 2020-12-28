@@ -1,10 +1,11 @@
-import { AClass, AMethod, AProperty, Labeled, setupTestingWeaverContext } from '@aspectjs/core/testing';
+import { _AClass, _AMethod, _AProperty, _Labeled } from '@root/testing';
 import { Around, Aspect, Before, Order } from '@aspectjs/core/annotations';
-import { Weaver, WeavingError } from '../../weaver';
-import { AroundContext, BeforeContext } from '../advice.context.type';
-import { on, JoinPoint } from '../../types';
-import { AdviceType } from '../types';
+
 import Spy = jasmine.Spy;
+import { Weaver, WeavingError } from '@aspectjs/weaver';
+import { AroundContext } from './around.context';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { JoinPoint, AdviceType, BeforeContext, on } from '../../..';
 
 describe('@Around advice', () => {
     let beforeAdvice: Spy;
@@ -25,7 +26,7 @@ describe('@Around advice', () => {
                 afterAdvice();
             });
 
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
     });
 
     describe('applied on a class', () => {
@@ -34,7 +35,7 @@ describe('@Around advice', () => {
         beforeEach(() => {
             @Aspect('AClassLabel')
             class AroundClassAspect {
-                @Around(on.class.withAnnotations(AClass))
+                @Around(on.class.withAnnotations(_AClass))
                 apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
@@ -52,7 +53,7 @@ describe('@Around advice', () => {
                 expect(this).toEqual(jasmine.any(aspectClass));
             });
 
-            @AClass()
+            @_AClass()
             class A {}
 
             new A();
@@ -60,7 +61,7 @@ describe('@Around advice', () => {
         });
 
         it('should call the aspect around the constructor', () => {
-            @AClass()
+            @_AClass()
             class A {
                 constructor() {
                     ctor();
@@ -86,7 +87,7 @@ describe('@Around advice', () => {
             });
 
             it('should call the original ctor with given args', () => {
-                @AClass()
+                @_AClass()
                 class A {
                     labels: string[];
                     constructor(label: string) {
@@ -110,7 +111,7 @@ describe('@Around advice', () => {
             });
 
             it('should throw an error', () => {
-                @AClass()
+                @_AClass()
                 class A {
                     labels: string[];
                     constructor(label: string) {
@@ -120,7 +121,9 @@ describe('@Around advice', () => {
                 }
 
                 expect(() => new A('ctor').labels).toThrow(
-                    new WeavingError('@Around(@AClass) AroundClassAspect.apply(): joinPoint already proceeded'),
+                    new WeavingError(
+                        'Error applying advice @Around(@AClass) AroundClassAspect.apply() on class "A": joinPoint already proceeded',
+                    ),
                 );
             });
         });
@@ -137,7 +140,7 @@ describe('@Around advice', () => {
             });
 
             it('should not call through original ctor', () => {
-                @AClass()
+                @_AClass()
                 class A {
                     labels: string[];
                     constructor(label: string) {
@@ -163,7 +166,7 @@ describe('@Around advice', () => {
 
                     @Aspect('aAspect')
                     class AAspect {
-                        @Around(on.class.withAnnotations(AClass))
+                        @Around(on.class.withAnnotations(_AClass))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('beforeA');
                             jp(aArgsOverride);
@@ -173,7 +176,7 @@ describe('@Around advice', () => {
 
                     @Aspect('bAspect')
                     class BAspect {
-                        @Around(on.class.withAnnotations(AClass))
+                        @Around(on.class.withAnnotations(_AClass))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('beforeB');
                             jp(bArgsOverride);
@@ -183,7 +186,7 @@ describe('@Around advice', () => {
                     weaver.enable(new AAspect(), new BAspect());
                 });
                 it('should call them nested, in declaration order', () => {
-                    @AClass()
+                    @_AClass()
                     class A {
                         constructor(label: string) {
                             labels.push(label);
@@ -201,7 +204,7 @@ describe('@Around advice', () => {
                     });
 
                     it('should pass overridden arguments', () => {
-                        @AClass()
+                        @_AClass()
                         class A {
                             constructor(label: string) {
                                 labels.push(label);
@@ -224,7 +227,7 @@ describe('@Around advice', () => {
                     @Aspect('aAspect')
                     class AAspect {
                         @Order(1)
-                        @Around(on.class.withAnnotations(AClass))
+                        @Around(on.class.withAnnotations(_AClass))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             labels.push('A.around.before');
                             jp();
@@ -235,7 +238,7 @@ describe('@Around advice', () => {
                     @Aspect('bAspect')
                     class BAspect {
                         @Order(2)
-                        @Before(on.class.withAnnotations(AClass))
+                        @Before(on.class.withAnnotations(_AClass))
                         apply(ctxt: BeforeContext): void {
                             labels.push('B.before');
                         }
@@ -243,7 +246,7 @@ describe('@Around advice', () => {
                     weaver.enable(new AAspect(), new BAspect());
                 });
                 it('should call @Before advice inside @Around advice', () => {
-                    @AClass()
+                    @_AClass()
                     class A {
                         constructor(label: string) {}
                     }
@@ -256,11 +259,11 @@ describe('@Around advice', () => {
     });
 
     describe('applied on a property', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
-                @Around(on.property.withAnnotations(AProperty))
+                @Around(on.property.withAnnotations(_AProperty))
                 apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
@@ -272,8 +275,8 @@ describe('@Around advice', () => {
 
             weaver.enable(new AroundPropertyAspect());
 
-            class A implements Labeled {
-                @AProperty()
+            class A implements _Labeled {
+                @_AProperty()
                 public labels: string[] = ['value'];
             }
 
@@ -348,7 +351,7 @@ describe('@Around advice', () => {
                 it('should throw an error', () => {
                     expect(() => a.labels).toThrow(
                         new WeavingError(
-                            '@Around(@AProperty) AroundPropertyAspect.apply(): joinPoint already proceeded',
+                            'Error applying advice @Around(@AProperty) AroundPropertyAspect.apply() on property "A.labels": joinPoint already proceeded',
                         ),
                     );
                 });
@@ -358,14 +361,14 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     @Aspect('APropertyLabel')
                     class AroundPropertyAspect {
-                        @Around(on.property.withAnnotations(AProperty))
+                        @Around(on.property.withAnnotations(_AProperty))
                         apply(): void {}
                     }
 
                     weaver.enable(new AroundPropertyAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[] = ['value'];
                     }
 
@@ -380,7 +383,7 @@ describe('@Around advice', () => {
                     beforeEach(() => {
                         @Aspect('aAspect')
                         class AAspect {
-                            @Around(on.property.withAnnotations(AProperty))
+                            @Around(on.property.withAnnotations(_AProperty))
                             apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeA'].concat(jp() as []).concat('afterA');
                             }
@@ -388,15 +391,15 @@ describe('@Around advice', () => {
 
                         @Aspect('bAspect')
                         class BAspect {
-                            @Around(on.property.withAnnotations(AProperty))
+                            @Around(on.property.withAnnotations(_AProperty))
                             apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): any[] {
                                 return ['beforeB'].concat(jp() as []).concat('afterB');
                             }
                         }
                         weaver.enable(new AAspect(), new BAspect());
 
-                        class A implements Labeled {
-                            @AProperty()
+                        class A implements _Labeled {
+                            @_AProperty()
                             public labels: string[] = ['value'];
                         }
 
@@ -411,11 +414,11 @@ describe('@Around advice', () => {
     });
 
     describe('applied on a property setter', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect('APropertyLabel')
             class AroundPropertyAspect {
-                @Around(on.property.setter.withAnnotations(AProperty))
+                @Around(on.property.setter.withAnnotations(_AProperty))
                 apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
@@ -427,8 +430,8 @@ describe('@Around advice', () => {
 
             weaver.enable(new AroundPropertyAspect());
 
-            class A implements Labeled {
-                @AProperty()
+            class A implements _Labeled {
+                @_AProperty()
                 public labels: string[] = ['value'];
             }
 
@@ -482,7 +485,7 @@ describe('@Around advice', () => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
                         .and.callFake(
-                            (ctxt: AroundContext<Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            (ctxt: AroundContext<_Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
                                 return jp([
                                     []
@@ -507,7 +510,7 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     @Aspect('aAspect')
                     class AAspect {
-                        @Around(on.property.setter.withAnnotations(AProperty))
+                        @Around(on.property.setter.withAnnotations(_AProperty))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundA');
                             jp(jpArgs);
@@ -516,7 +519,7 @@ describe('@Around advice', () => {
 
                     @Aspect('bAspect')
                     class BAspect {
-                        @Around(on.property.setter.withAnnotations(AProperty))
+                        @Around(on.property.setter.withAnnotations(_AProperty))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs[0].push('aroundB');
                             jp(jpArgs);
@@ -524,8 +527,8 @@ describe('@Around advice', () => {
                     }
                     weaver.enable(new AAspect(), new BAspect());
 
-                    class A implements Labeled {
-                        @AProperty()
+                    class A implements _Labeled {
+                        @_AProperty()
                         public labels: string[];
                     }
 
@@ -540,11 +543,11 @@ describe('@Around advice', () => {
     });
 
     describe('applied on a method', () => {
-        let a: Labeled;
+        let a: _Labeled;
         beforeEach(() => {
             @Aspect()
             class AroundPropertyAspect {
-                @Around(on.method.withAnnotations(AMethod))
+                @Around(on.method.withAnnotations(_AMethod))
                 apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                     expect(jp).toEqual(ctxt.joinpoint);
                     expect(jpArgs).toEqual(ctxt.args);
@@ -556,10 +559,10 @@ describe('@Around advice', () => {
 
             weaver.enable(new AroundPropertyAspect());
 
-            class A implements Labeled {
+            class A implements _Labeled {
                 public labels: string[] = [];
 
-                @AMethod()
+                @_AMethod()
                 addLabel(...labels: string[]) {
                     return (this.labels = this.labels.concat(labels));
                 }
@@ -620,7 +623,7 @@ describe('@Around advice', () => {
                     aroundAdvice = jasmine
                         .createSpy('aroundAdvice')
                         .and.callFake(
-                            (ctxt: AroundContext<Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
+                            (ctxt: AroundContext<_Labeled, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]) => {
                                 expect(ctxt.instance).not.toBeNull();
                                 return jp(
                                     []
@@ -647,7 +650,7 @@ describe('@Around advice', () => {
                 beforeEach(() => {
                     @Aspect('aAspect')
                     class AAspect {
-                        @Around(on.method.withAnnotations(AMethod))
+                        @Around(on.method.withAnnotations(_AMethod))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs.push('aroundA');
                             jp(jpArgs);
@@ -656,7 +659,7 @@ describe('@Around advice', () => {
 
                     @Aspect('bAspect')
                     class BAspect {
-                        @Around(on.method.withAnnotations(AMethod))
+                        @Around(on.method.withAnnotations(_AMethod))
                         apply(ctxt: AroundContext<any, AdviceType.CLASS>, jp: JoinPoint, jpArgs: any[]): void {
                             jpArgs.push('aroundB');
                             jp(jpArgs);
@@ -664,10 +667,10 @@ describe('@Around advice', () => {
                     }
                     weaver.enable(new AAspect(), new BAspect());
 
-                    class A implements Labeled {
+                    class A implements _Labeled {
                         public labels: string[] = [];
 
-                        @AMethod()
+                        @_AMethod()
                         addLabel(...labels: string[]) {
                             return (this.labels = this.labels.concat(labels));
                         }

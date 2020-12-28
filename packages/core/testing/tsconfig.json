@@ -9,6 +9,7 @@
   ],
   "references": [
     { "path": "../" },
-    { "path": "../commons" }
+    { "path": "../../reflect/testing" },
+    { "path": "../../weaver/testing" },
   ]
 }

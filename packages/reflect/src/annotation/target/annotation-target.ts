@@ -1,4 +1,5 @@
 import { AnnotationType } from '@aspectjs/common';
+import { AnnotationLocation } from '../location/annotation-location';
 
 /**
  * @public
@@ -24,12 +25,12 @@ export interface AnnotationTarget<T = unknown, A extends AnnotationType = Annota
         : ClassAdviceTarget<any>;
     readonly declaringClass: ClassAdviceTarget<T>;
     readonly parentClass: ClassAdviceTarget<T>;
+    readonly location: AnnotationLocation<T, A>;
 }
 /**
  * @public
  */
 export type AdviceTarget<T = unknown, A extends AnnotationType = any> = AnnotationTarget<T, A>;
-
 /**
  * @public
  */

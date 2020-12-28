@@ -1,19 +1,8 @@
 import { After, AfterThrow, Aspect, Order } from '@aspectjs/core/annotations';
-import {
-    AClass,
-    AMethod,
-    AParameter,
-    AProperty,
-    BClass,
-    BMethod,
-    BParameter,
-    BProperty,
-    setupTestingWeaverContext,
-} from '@aspectjs/core/testing';
-
-import { on } from '../../types';
-import { Weaver } from '../../weaver';
-import { AdviceContext, AdviceType, AfterContext, AfterThrowContext, AroundContext } from '../types';
+import { Weaver } from '@aspectjs/weaver';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
+import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParameter, _BProperty } from '@root/testing';
+import { AfterThrowContext, AdviceType, AfterContext, AdviceContext, on } from '../../..';
 
 describe('AfterThrowContext', () => {
     let weaver: Weaver;
@@ -23,7 +12,7 @@ describe('AfterThrowContext', () => {
     let afterBAdvice = jasmine.createSpy('afterBAdvice');
 
     beforeEach(() => {
-        weaver = setupTestingWeaverContext().getWeaver();
+        weaver = setupAspectTestingContext().weaverContext.getWeaver();
         afterThrowAAdvice = jasmine.createSpy('afterThrowAAdvice');
         afterThrowBAdvice = jasmine.createSpy('afterThrowBAdvice');
         afterAAdvice = jasmine.createSpy('afterAAdvice');
@@ -37,13 +26,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class ClassAspectA {
                 @Order(1)
-                @AfterThrow(on.class.withAnnotations(AClass))
+                @AfterThrow(on.class.withAnnotations(_AClass))
                 afterThrowA(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.class.withAnnotations(AClass))
+                @After(on.class.withAnnotations(_AClass))
                 afterA(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterAAdvice(ctxt);
                 }
@@ -51,13 +40,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class ClassAspectB {
                 @Order(0)
-                @AfterThrow(on.class.withAnnotations(BClass))
+                @AfterThrow(on.class.withAnnotations(_BClass))
                 afterThrowB(ctxt: AfterThrowContext<any, AdviceType.PROPERTY>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.class.withAnnotations(BClass))
+                @After(on.class.withAnnotations(_BClass))
                 afterB(ctxt: AfterContext<any, AdviceType.PROPERTY>): void {
                     afterBAdvice(ctxt);
                 }
@@ -82,8 +71,8 @@ describe('AfterThrowContext', () => {
                 afterThrowBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterThrowB'));
             });
             it('should be shared across two @AfterThrow advices on the same class', () => {
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {
                     constructor() {
                         throw new Error();
@@ -96,7 +85,7 @@ describe('AfterThrowContext', () => {
             });
 
             it('should not be shared across two @AfterThrow advices on different classes', () => {
-                @AClass()
+                @_AClass()
                 class Test1 {
                     constructor() {
                         throw new Error();
@@ -104,7 +93,7 @@ describe('AfterThrowContext', () => {
                 }
                 new Test1();
                 expect(data.advices).toEqual(['afterThrowA']);
-                @BClass()
+                @_BClass()
                 class Test2 {
                     constructor() {
                         throw new Error();
@@ -119,8 +108,8 @@ describe('AfterThrowContext', () => {
                 afterAAdvice.and.callFake((ctxt: AfterContext<any, any>) => pushData(ctxt, 'afterA'));
                 afterBAdvice.and.callFake((ctxt: AfterContext<any, any>) => pushData(ctxt, 'afterB'));
 
-                @AClass()
-                @BClass()
+                @_AClass()
+                @_BClass()
                 class Test {
                     constructor() {
                         throw new Error();
@@ -139,8 +128,8 @@ describe('AfterThrowContext', () => {
                 expect(ctxt.advice.aspect.constructor).toEqual(classAspectB);
             });
 
-            @AClass()
-            @BClass()
+            @_AClass()
+            @_BClass()
             class Test {
                 constructor() {
                     throw new Error();
@@ -159,13 +148,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterThrow(on.property.withAnnotations(AProperty))
+                @AfterThrow(on.property.withAnnotations(_AProperty))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.property.withAnnotations(AProperty))
+                @After(on.property.withAnnotations(_AProperty))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
@@ -173,13 +162,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterThrow(on.property.withAnnotations(BProperty))
+                @AfterThrow(on.property.withAnnotations(_BProperty))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.property.withAnnotations(BProperty))
+                @After(on.property.withAnnotations(_BProperty))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -209,8 +198,8 @@ describe('AfterThrowContext', () => {
             });
             it('should be shared across two @AfterThrow advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     get prop() {
                         throw new Error();
                     }
@@ -223,13 +212,13 @@ describe('AfterThrowContext', () => {
             });
 
             it('should not be shared across two @AfterThrow advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     get prop1() {
                         throw new Error();
                     }
-                    @BProperty()
+                    @_BProperty()
                     get prop2() {
                         throw new Error();
                     }
@@ -249,8 +238,8 @@ describe('AfterThrowContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     get prop() {
                         throw new Error();
                     }
@@ -275,8 +264,8 @@ describe('AfterThrowContext', () => {
             });
 
             class Test {
-                @AProperty()
-                @BProperty()
+                @_AProperty()
+                @_BProperty()
                 get prop() {
                     throw new Error();
                 }
@@ -295,13 +284,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterThrow(on.property.setter.withAnnotations(AProperty))
+                @AfterThrow(on.property.setter.withAnnotations(_AProperty))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.property.setter.withAnnotations(AProperty))
+                @After(on.property.setter.withAnnotations(_AProperty))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterAAdvice(ctxt);
                 }
@@ -309,13 +298,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterThrow(on.property.setter.withAnnotations(BProperty))
+                @AfterThrow(on.property.setter.withAnnotations(_BProperty))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.CLASS>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.property.setter.withAnnotations(BProperty))
+                @After(on.property.setter.withAnnotations(_BProperty))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.CLASS>): void {
                     afterBAdvice(ctxt);
                 }
@@ -345,8 +334,8 @@ describe('AfterThrowContext', () => {
             });
             it('should be shared across two @AfterThrow advices on the same property', () => {
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     set prop(x: any) {
                         throw new Error();
                     }
@@ -358,14 +347,14 @@ describe('AfterThrowContext', () => {
             });
 
             it('should not be shared across two @AfterThrow advices on different properties', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AProperty()
+                    @_AProperty()
                     set prop1(x: any) {
                         throw new Error();
                     }
 
-                    @BProperty()
+                    @_BProperty()
                     set prop2(x: any) {
                         throw new Error();
                     }
@@ -385,8 +374,8 @@ describe('AfterThrowContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AProperty()
-                    @BProperty()
+                    @_AProperty()
+                    @_BProperty()
                     set prop(x: any) {
                         throw new Error();
                     }
@@ -411,8 +400,8 @@ describe('AfterThrowContext', () => {
             });
 
             class Test {
-                @AProperty()
-                @BProperty()
+                @_AProperty()
+                @_BProperty()
                 set prop(x: any) {
                     throw new Error();
                 }
@@ -432,8 +421,8 @@ describe('AfterThrowContext', () => {
             });
 
             class Test {
-                @AProperty()
-                @BProperty()
+                @_AProperty()
+                @_BProperty()
                 set prop(x: any) {
                     throw new Error();
                 }
@@ -452,13 +441,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectA {
                 @Order(1)
-                @AfterThrow(on.method.withAnnotations(AMethod))
+                @AfterThrow(on.method.withAnnotations(_AMethod))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.METHOD>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.method.withAnnotations(AMethod))
+                @After(on.method.withAnnotations(_AMethod))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterAAdvice(ctxt);
                 }
@@ -466,13 +455,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class PropertyAspectB {
                 @Order(0)
-                @AfterThrow(on.method.withAnnotations(BMethod))
+                @AfterThrow(on.method.withAnnotations(_BMethod))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.METHOD>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.method.withAnnotations(BMethod))
+                @After(on.method.withAnnotations(_BMethod))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.METHOD>): void {
                     afterBAdvice(ctxt);
                 }
@@ -499,8 +488,8 @@ describe('AfterThrowContext', () => {
 
             it('should be shared across two @AfterThrow advices on the same method', () => {
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     someMethod(): any {
                         throw new Error();
                     }
@@ -513,14 +502,14 @@ describe('AfterThrowContext', () => {
             });
 
             it('should not be shared across two @AfterThrow advices on different method', () => {
-                @AClass()
+                @_AClass()
                 class Test {
-                    @AMethod()
+                    @_AMethod()
                     method1(): any {
                         throw new Error();
                     }
 
-                    @BMethod()
+                    @_BMethod()
                     method2(): any {
                         throw new Error();
                     }
@@ -540,8 +529,8 @@ describe('AfterThrowContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    @AMethod()
-                    @BMethod()
+                    @_AMethod()
+                    @_BMethod()
                     method(): any {
                         throw new Error();
                     }
@@ -561,8 +550,8 @@ describe('AfterThrowContext', () => {
             });
 
             class Test {
-                @AMethod()
-                @BMethod()
+                @_AMethod()
+                @_BMethod()
                 method(): any {
                     throw new Error();
                 }
@@ -581,13 +570,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class ParameterAspectA {
                 @Order(1)
-                @AfterThrow(on.parameter.withAnnotations(AParameter))
+                @AfterThrow(on.parameter.withAnnotations(_AParameter))
                 aroundA(ctxt: AfterThrowContext<any, AdviceType.PARAMETER>): void {
                     afterThrowAAdvice(ctxt);
                 }
 
                 @Order(1)
-                @After(on.parameter.withAnnotations(AParameter))
+                @After(on.parameter.withAnnotations(_AParameter))
                 afterReturnA(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterAAdvice(ctxt);
                 }
@@ -595,13 +584,13 @@ describe('AfterThrowContext', () => {
             @Aspect()
             class ParameterAspectB {
                 @Order(0)
-                @AfterThrow(on.parameter.withAnnotations(BParameter))
+                @AfterThrow(on.parameter.withAnnotations(_BParameter))
                 aroundB(ctxt: AfterThrowContext<any, AdviceType.PARAMETER>): void {
                     afterThrowBAdvice(ctxt);
                 }
 
                 @Order(0)
-                @After(on.parameter.withAnnotations(BParameter))
+                @After(on.parameter.withAnnotations(_BParameter))
                 afterReturnB(ctxt: AfterContext<any, AdviceType.PARAMETER>): void {
                     afterBAdvice(ctxt);
                 }
@@ -627,7 +616,7 @@ describe('AfterThrowContext', () => {
             });
             it('should be shared across two @AfterThrow advices on the same parameter', () => {
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {
+                    someMethod(@_AParameter() @_BParameter() param: any): any {
                         throw new Error();
                     }
                 }
@@ -639,7 +628,7 @@ describe('AfterThrowContext', () => {
 
             it('should not be shared across two @AfterThrow advices on different parameters', () => {
                 class Test {
-                    someMethod(@AParameter() paramA: any, @BParameter() paramB: any): any {
+                    someMethod(@_AParameter() paramA: any, @_BParameter() paramB: any): any {
                         throw new Error();
                     }
                 }
@@ -653,7 +642,7 @@ describe('AfterThrowContext', () => {
                 afterBAdvice.and.callFake((ctxt) => pushData(ctxt, 'afterB'));
 
                 class Test {
-                    someMethod(@AParameter() @BParameter() param: any): any {
+                    someMethod(@_AParameter() @_BParameter() param: any): any {
                         throw new Error();
                     }
                 }
@@ -671,7 +660,7 @@ describe('AfterThrowContext', () => {
             });
 
             class Test {
-                someMethod(@AParameter() @BParameter() param: any): any {
+                someMethod(@_AParameter() @_BParameter() param: any): any {
                     throw new Error();
                 }
             }

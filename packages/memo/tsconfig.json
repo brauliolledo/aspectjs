@@ -19,9 +19,8 @@
   },
   "references": [
     { "path": "../core" },
-    { "path": "../core/commons" },
+    { "path": "../common" },
     { "path": "../core/annotations" },
-    { "path": "../core/testing" },
-    { "path": "../core/utils" }
+    { "path": "../core/testing" }
   ]
 }

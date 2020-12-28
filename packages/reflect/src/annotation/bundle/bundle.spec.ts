@@ -1,7 +1,9 @@
+import { setupReflectTestingContext } from '@aspectjs/reflect/testing';
+
 import { RootAnnotationsBundle } from './bundle';
+import { ReflectContext } from '../../context/reflect.context';
 
 import {
-    setupTestingReflectContext,
     _AClass,
     _BClass,
     _CClass,
@@ -18,19 +20,17 @@ import {
     _DMethod,
     _CParameter,
     _DParameter,
-    _XProperty,
     _XClass,
+    _XProperty,
     _XMethod,
     _XParameter,
-} from '@aspectjs/reflect/testing';
-
-import { ReflectContext } from '../../context/reflect.context';
+} from '@root/testing';
 
 describe('RootAnnotationsBundle', () => {
     let rootBundle: RootAnnotationsBundle;
     let reflectContext: ReflectContext;
     beforeEach(() => {
-        reflectContext = setupTestingReflectContext();
+        reflectContext = setupReflectTestingContext();
         rootBundle = reflectContext.annotations.bundle;
     });
 
