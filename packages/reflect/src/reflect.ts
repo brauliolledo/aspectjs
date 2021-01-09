@@ -1,3 +1,5 @@
+import { RootAnnotationsBundle } from './annotation/bundle/bundle';
+import { AnnotationLocationFactory } from './annotation/location/location.factory';
 import { ReflectContextImpl } from './context/reflect-context.impl';
 import { _setReflectContext } from './context/reflect.context';
 
@@ -16,3 +18,7 @@ export const REFLECT = new ReflectContextImpl();
 export const ANNOTATIONS = REFLECT.annotations.bundle;
 export const LOCATION = REFLECT.annotations.location;
 _setReflectContext(REFLECT);
+
+// TODO remove when https://github.com/microsoft/rushstack/issues/1050 is resolved
+RootAnnotationsBundle;
+AnnotationLocationFactory;
