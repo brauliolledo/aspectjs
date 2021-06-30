@@ -1,26 +1,17 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "include": [
-    "src/**/*.ts",
-    "public_api.ts",
-    "node_modules/@types/node/globals.d.ts",
-  ],
-  "exclude": [
-    "**/*.spec.ts",
-    "**/dist",
-    "**/rollup.config.ts"
-  ],
+    "extends": "../../tsconfig.base.json",
+    "include": ["src/**/*.ts", "public_api.ts", "node_modules/@types/node/globals.d.ts"],
+    "exclude": ["**/*.spec.ts", "**/dist", "**/rollup.config.ts"],
 
-  "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "dist",
-    "experimentalDecorators": true
-  },
-  "references": [
-    { "path": "../common" },
-    { "path": "../common/utils" },
-    { "path": "../reflect" },
-    { "path": "../core" },
-    { "path": "../core/annotations" },
-  ]
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "dist"
+    },
+    "references": [
+        { "path": "../common" },
+        { "path": "../common/utils" },
+        { "path": "../reflect" },
+        { "path": "../core" },
+        { "path": "../core/annotations" }
+    ]
 }

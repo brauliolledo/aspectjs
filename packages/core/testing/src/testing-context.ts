@@ -8,5 +8,5 @@ export function setupAspectTestingContext(): {
     reflectContext: ReflectContext;
 } {
     const reflectContext = setupReflectTestingContext();
-    return { reflectContext, weaverContext: setupWeaverTestingContext(reflectContext) };
+    return { reflectContext, weaverContext: setupWeaverTestingContext() };
 }

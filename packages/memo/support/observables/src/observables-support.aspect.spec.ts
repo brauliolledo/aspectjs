@@ -1,6 +1,6 @@
-import { setupTestingWeaverContext } from '@aspectjs/core/testing';
-import { Observable, of } from 'rxjs';
+import { setupAspectTestingContext } from '@aspectjs/core/testing';
 import { Memo, MEMO_PROFILE } from '@aspectjs/memo';
+import { Observable, of } from 'rxjs';
 import { setupMemoAspect } from '../../../src/utils/spec-helpers';
 import { ObservableMemoSupportAspect } from './observables-support.aspect';
 
@@ -30,7 +30,7 @@ describe('ObservableMemoSupportAspect', () => {
 
     describe('when enabled', () => {
         beforeEach(() => {
-            setupTestingWeaverContext();
+            setupAspectTestingContext();
             MEMO_PROFILE.enable(new ObservableMemoSupportAspect()).register();
         });
         it('should allow using @Memo with an observable', async (cb) => {

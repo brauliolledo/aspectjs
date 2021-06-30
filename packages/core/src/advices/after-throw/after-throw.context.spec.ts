@@ -2,7 +2,7 @@ import { After, AfterThrow, Aspect, Order } from '@aspectjs/core/annotations';
 import { Weaver } from '@aspectjs/weaver';
 import { setupAspectTestingContext } from '@aspectjs/core/testing';
 import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParameter, _BProperty } from '@root/testing';
-import { AfterThrowContext, AdviceType, AfterContext, AdviceContext, on } from '../../..';
+import { AfterThrowContext, AdviceType, AfterContext, AdviceContext, on } from '@aspectjs/core';
 
 describe('AfterThrowContext', () => {
     let weaver: Weaver;

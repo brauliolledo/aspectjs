@@ -1,26 +1,18 @@
 {
-  "extends": "./tsconfig.json",
-  "include": [
-    "src/**/*.ts",
-    "public_api.ts",
-    "**/*.spec.ts",
-    "../testing/"
-  ],
-  "exclude": [
-    "dist",
-    "rollup.config.ts"
-  ],
-  "compilerOptions": {
-    "rootDir": ".",
-    "module": "commonjs",
-    "types": ["reflect-metadata", "jasmine", "node"]
-  },
-  "references": [
-    { "path": "../common" },
-    { "path": "../reflect" },
-    { "path": "../reflect/testing" },
-    { "path": "../weaver/testing" },
-    { "path": "../weaver" },
-    { "path": "./annotations" }
-  ]
+    "extends": "./tsconfig.json",
+    "include": ["src/**/*.ts", "public_api.ts", "**/*.spec.ts", "../testing/**/*.ts"],
+    "exclude": ["dist", "rollup.config.ts"],
+    "compilerOptions": {
+        "rootDir": ".",
+        "module": "commonjs",
+        "types": ["reflect-metadata", "jasmine", "node"]
+    },
+    "references": [
+        { "path": "../common" },
+        { "path": "../reflect" },
+        { "path": "../reflect/testing" },
+        { "path": "../weaver/testing" },
+        { "path": "../weaver" },
+        { "path": "./annotations" }
+    ]
 }

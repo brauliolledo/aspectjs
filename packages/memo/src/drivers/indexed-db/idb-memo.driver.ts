@@ -1,4 +1,4 @@
-import { WEAVER } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/weaver';
 import { MemoDriver } from '../memo.driver';
 import { MemoEntry, MemoKey } from '../../memo.types';
 import { assert } from '@aspectjs/common/utils';

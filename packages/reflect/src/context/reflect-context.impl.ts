@@ -1,18 +1,18 @@
 import { AnnotationFactory } from '@aspectjs/common';
-import { RootAnnotationsBundle } from '../../src/annotation/bundle/bundle';
-import { AnnotationContextRegistry } from '../../src/annotation/context/annotation-context.registry';
-import { _AnnotationContextImpl } from '../../src/annotation/context/annotation.context';
-import { AnnotationRegistry } from '../../src/annotation/registry/annotation.registry';
-import { AnnotationTargetFactory } from '../../src/annotation/target/annotation-target.factory';
+import { RootAnnotationsBundle } from '../annotation/bundle/bundle';
+import { AnnotationContextRegistry } from '../annotation/context/annotation-context.registry';
+import { _AnnotationContextImpl } from '../annotation/context/annotation.context';
+import { AnnotationRegistry } from '../annotation/registry/annotation.registry';
+import { AnnotationTargetFactory } from '../annotation/target/annotation-target.factory';
 import { AnnotationLocationFactory } from '../annotation/location/location.factory';
 import { ReflectContext } from './reflect.context';
 
 export class ReflectContextImpl implements ReflectContext {
     readonly annotations: {
-        location: AnnotationLocationFactory;
-        registry: AnnotationRegistry;
-        targetFactory: AnnotationTargetFactory;
-        bundle: RootAnnotationsBundle;
+        location: AnnotationLocationFactory; // All known annotation locations
+        registry: AnnotationRegistry; // Registers new annotations
+        targetFactory: AnnotationTargetFactory; // Create annotation targets for annotations
+        bundle: RootAnnotationsBundle; // Access all registered annotations
     };
 
     constructor() {
@@ -33,8 +33,8 @@ export class ReflectContextImpl implements ReflectContext {
             targetFactory,
         };
         // add annotation factory hook to register annotations
-        AnnotationFactory.addBootstrapModule({
-            name: '@aspectjs::registerAnnotation',
+        AnnotationFactory.addAnnotationsHook({
+            name: '@aspectjs::hook:registerAnnotation',
             decorator: (annotation, _stub, annotationArgs) => {
                 return (...targetArgs: any[]) => {
                     const target = targetFactory.of(targetArgs);

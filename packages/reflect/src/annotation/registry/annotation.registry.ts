@@ -7,22 +7,22 @@ import { AnnotationContext } from '../context/annotation.context';
  * @public
  */
 export class AnnotationRegistry {
-    constructor(private readonly _bundleRegistry: AnnotationContextRegistry) {}
+    constructor(private readonly _annotationContextRegistry: AnnotationContextRegistry) {}
 
     /**
      * Registers a new annotation by its AnnotationContext,
-     * so that it can be picked up wy an annotation weaver, or used through AnnotationBundle
+     * so that it can be picked up by an annotation weaver, or accessed with AnnotationBundle
      * @param context - the annotation context to register
      */
     register<A extends AnnotationType, T = unknown>(context: AnnotationContext<T, A>) {
-        const byTargetReg = locator(this._bundleRegistry.byTargetClassRef)
+        const byTargetReg = locator(this._annotationContextRegistry.byTargetClassRef)
             .at(context.target.declaringClass.ref)
             .orElseCompute(() => ({
                 byAnnotation: {},
                 all: [],
             }));
 
-        [byTargetReg, this._bundleRegistry].forEach((reg) => {
+        [byTargetReg, this._annotationContextRegistry].forEach((reg) => {
             locator(reg.byAnnotation)
                 .at(context.ref)
                 .orElseCompute(() => [])

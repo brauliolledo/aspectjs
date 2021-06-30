@@ -17,7 +17,7 @@ describe('Given a @Memo method that returns an Array', () => {
         localStorage.clear();
     });
 
-    describe('of Cacheables', () => {
+    describe('of Cacheable instances', () => {
         beforeEach(() => {
             setupMemoAspect();
             @Cacheable()
@@ -62,7 +62,7 @@ describe('Given a @Memo method that returns an Array', () => {
             ]);
         });
 
-        it('should return an array of correct type', () => {
+        fit('should return an array of correct type', () => {
             expect(memoMethod()).toEqual(memoMethod());
             expect(joinpoint).toHaveBeenCalledTimes(1);
             expect(memoMethod()).toEqual(jasmine.any(Array));

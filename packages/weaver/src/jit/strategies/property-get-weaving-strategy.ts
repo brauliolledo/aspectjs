@@ -3,7 +3,7 @@ import { assert, getOrComputeMetadata, isFunction, isUndefined, Mutable } from '
 import { AdviceType, CompileAdvice, AdviceError } from '@aspectjs/core';
 import { AdviceTarget } from '@aspectjs/reflect';
 import { _JoinpointFactory } from '@aspectjs/weaver';
-import { MutableAdviceContext } from 'weaver/src/mutable-advice.context.type';
+import { MutableAdviceContext } from '../../mutable-advice.context.type';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 
 /**

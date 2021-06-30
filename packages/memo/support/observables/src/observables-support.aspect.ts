@@ -1,11 +1,12 @@
 import { AfterReturn, Aspect } from '@aspectjs/core/annotations';
-import { AfterReturnContext, AspectType, on, WeaverProfile, WeavingError } from '@aspectjs/common';
+import { AfterReturnContext, AspectType, on, WeaverProfile } from '@aspectjs/core';
 import { Memo, MemoAspect } from '@aspectjs/memo';
 
 import { isObservable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 import { ObservableMarshaller } from './observable-marshaller';
+import { WeavingError } from '@aspectjs/weaver';
 
 /**
  * Enable support for Observables memoization.

@@ -1,48 +1,41 @@
 {
-  "$schema": "http://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "declaration": true,
-    "composite": true,
-    "declarationMap": true,
-    "noImplicitAny": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "downlevelIteration": true,
-    "importHelpers": true,
-    "module": "ES6",
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "lib": [
-      "es2019.array"
-    ],
-    "types": ["reflect-metadata", "jasmine", "node"],
-    "target": "es2015",
-    "baseUrl": "packages",
-    "paths": {
-      "@root/testing": ["../testing/index.ts"],
-      "@aspectjs/common": ["common/public_api.ts"],
-      "@aspectjs/common/utils": ["common/utils/public_api.ts"],
-      "@aspectjs/reflect": ["reflect/public_api.ts"],
-      "@aspectjs/reflect/testing": ["reflect/testing/public_api.ts"],
-      "@aspectjs/core": ["core/public_api.ts"],
-      "@aspectjs/core/annotations": ["core/annotations/public_api.ts"],
-      "@aspectjs/core/testing": ["core/testing/public_api.ts"],
-      "@aspectjs/weaver": ["weaver/public_api.ts"],
-      "@aspectjs/memo": ["memo/public_api.ts"],
-      "@aspectjs/memo/support/observables": ["memo/support/observables/public_api.ts"],
-      "@aspectjs/fetch/annotations": ["fetch/annotations/public_api.ts"]
-    }
-  },
-   "files": [],
-   "exclude": [
-     "dist",
-     "**/node_modules/*"
-  ],
-  "include": [
-    "node_modules/@types/node/globals.d.ts"
-  ]
+    "$schema": "http://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "declaration": true,
+        "composite": true,
+        "declarationMap": true,
+        "noImplicitAny": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "downlevelIteration": true,
+        "importHelpers": true,
+        "module": "ES6",
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "lib": ["es2019.array"],
+        "types": ["reflect-metadata", "jasmine", "node"],
+        "target": "es2015",
+        "baseUrl": ".",
+        "paths": {
+            "@root/testing": ["./testing/public_api.ts"],
+            "@aspectjs/common": ["./packages/common/public_api.ts"],
+            "@aspectjs/common/utils": ["./packages/common/utils/public_api.ts"],
+            "@aspectjs/reflect": ["./packages/reflect/public_api.ts"],
+            "@aspectjs/reflect/testing": ["./packages/reflect/testing/public_api.ts"],
+            "@aspectjs/core": ["./packages/core/public_api.ts"],
+            "@aspectjs/core/annotations": ["./packages/core/annotations/public_api.ts"],
+            "@aspectjs/core/testing": ["./packages/core/testing/public_api.ts"],
+            "@aspectjs/weaver": ["./packages/weaver/public_api.ts"],
+            "@aspectjs/memo": ["./packages/memo/public_api.ts"],
+            "@aspectjs/memo/support/observables": ["./packages/memo/support/observables/public_api.ts"],
+            "@aspectjs/fetch/annotations": ["./packages/fetch/annotations/public_api.ts"]
+        }
+    },
+    "files": [],
+    "exclude": ["dist", "**/node_modules/*"],
+    "include": ["node_modules/@types/node/globals.d.ts"]
 }

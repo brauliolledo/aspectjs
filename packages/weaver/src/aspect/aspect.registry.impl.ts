@@ -1,4 +1,3 @@
-import { AnnotationRef } from '@aspectjs/common';
 import { assert, assertIsAspect, locator } from '@aspectjs/common/utils';
 import {
     Advice,
@@ -54,15 +53,12 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                 [After, PointcutPhase.AFTER],
                 [AfterReturn, PointcutPhase.AFTERRETURN],
                 [AfterThrow, PointcutPhase.AFTERTHROW],
-            ].forEach((adviceDef) => {
-                bundle.onMethod(adviceDef[0] as AnnotationRef).forEach((annotation) => {
+            ].forEach(([phaseAnnotation, phase]: [any, PointcutPhase]) => {
+                bundle.onMethod(phaseAnnotation).forEach((annotation) => {
                     const expr = annotation.args[0] as PointcutExpression;
                     assert(!!expr);
 
-                    const advice = _AdviceFactory.create(
-                        Pointcut.of(adviceDef[1] as PointcutPhase, expr),
-                        annotation.target,
-                    );
+                    const advice = _AdviceFactory.create(Pointcut.of(phase, expr), annotation.target);
                     const k = `${advice.pointcut.ref}=>${advice.name}`;
                     byAspectRegistry[k] = advice;
                 });
@@ -117,7 +113,7 @@ export class AspectsRegistryImpl implements AspectsRegistry {
             .orElseGet(() => ({}));
 
         // TODO move in 'orElseGet' & 'orElseGet' => 'orElseCompute' ?
-        const location = this._reflectContext.annotations.location.ofTarget(target);
+        const location = target.location;
 
         // get all advices that correspond to all the annotations of this context
         const bundle = this._reflectContext.annotations.bundle.at(location);
@@ -168,10 +164,13 @@ export class AspectsRegistryImpl implements AspectsRegistry {
      * @private
      */
     private _load() {
+        this.remove(); // TODO remove
         if (this._dirty) {
             this._advicesRegistry.byPointcut = {};
             this._advicesRegistry.byTarget = {};
         }
+        this._dirty = false;
+
         if (!this._aspectsToLoad.size) {
             return;
         }
@@ -202,7 +201,6 @@ export class AspectsRegistryImpl implements AspectsRegistry {
                     .orElseCompute(() => [])
                     .push(advice);
             });
-        this._dirty = false;
         this._aspectsToLoad.clear();
     }
 }

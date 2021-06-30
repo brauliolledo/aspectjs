@@ -1,6 +1,6 @@
 import { getOrComputeMetadata, isFunction, isUndefined } from '@aspectjs/common/utils';
 import { AdviceType, CompileAdvice, AdviceContext, AdviceError, JoinPoint } from '@aspectjs/core';
-import { MutableAdviceContext } from 'weaver/src/mutable-advice.context.type';
+import { MutableAdviceContext } from '../../mutable-advice.context.type';
 import { _defineFunctionProperties } from '../../utils';
 import { _GenericWeavingStrategy } from './generic-weaving-strategy';
 

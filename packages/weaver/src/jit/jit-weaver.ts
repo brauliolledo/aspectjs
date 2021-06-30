@@ -38,7 +38,7 @@ export class JitWeaver extends WeaverProfile implements Weaver {
     enable(...aspects: (AspectType | WeaverProfile)[]): this {
         const _aspects = new WeaverProfile().enable(...aspects).getAspects();
         try {
-            this._context.aspects.registry.register(..._aspects);
+            this._context.aspects.registry.register(...aspects);
             if (this._prod) {
                 // check annotations has not already been processed
                 const alreadyProcessedAnnotations = new Map<Pointcut, AspectType>();

@@ -1,5 +1,4 @@
-import { BeforeContext } from '@aspectjs/common';
-
+import { BeforeContext } from '@aspectjs/core';
 import moment from 'moment';
 
 import { Memo } from '../../memo.annotation';

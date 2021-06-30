@@ -27,7 +27,7 @@ export class _AdviceExecutionPlanFactory {
             assert(!!compiledSymbol);
 
             // TODO remove this extra jp ?
-            const jp = function (...args: any[]): T {
+            const bootstrapJp = function (...args: any[]): T {
                 const restoreArgs = ctxt.args;
                 const restoreInstance = ctxt.instance;
                 ctxt.args = args;
@@ -106,7 +106,7 @@ export class _AdviceExecutionPlanFactory {
                 return res;
             };
 
-            return hooks.finalize.call(hooks, ctxt, jp) ?? jp;
+            return hooks.finalize.call(hooks, ctxt, bootstrapJp) ?? bootstrapJp;
         };
         const compileFn = (ctxt: MutableAdviceContext<T, A>) => {
             const compileAdvices = _getWeaverContext().aspects.registry.getAdvicesByTarget(

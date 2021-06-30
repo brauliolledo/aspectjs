@@ -10,9 +10,9 @@ import {
     PropertyAnnotationStub,
 } from '../annotation.types';
 
-let generatedId = 0;
+let anonymousAnnotationId = 0;
 
-export type AnnotationBootstrapModule<A extends AnnotationType = any, S extends Annotation<AnnotationType> = any> = {
+export type AnnotationsHook<A extends AnnotationType = any, S extends Annotation<AnnotationType> = any> = {
     decorator: (annotation: Annotation<A>, annotationStub: S, annotationArgs: any[]) => Decorator | void;
     order: number;
     name: string;
@@ -25,11 +25,11 @@ export type AnnotationBootstrapModule<A extends AnnotationType = any, S extends 
 export class AnnotationFactory {
     private readonly _groupId: string;
 
-    private static readonly _bootstrapConfigs: Map<string, AnnotationBootstrapModule> = new Map([
+    private static readonly _hooks: Map<string, AnnotationsHook> = new Map([
         [
-            '@aspectjs::annotationStub',
+            '@aspectjs::hook:annotationStub',
             {
-                name: '@aspectjs::annotationStub',
+                name: '@aspectjs::hook:annotationStub',
                 order: 0,
                 decorator: (_annotation, annotationStub, annotationArgs) => {
                     return annotationStub(...annotationArgs);
@@ -38,9 +38,9 @@ export class AnnotationFactory {
         ],
     ]);
 
-    static addBootstrapModule(bootstrapConfig: AnnotationBootstrapModule) {
-        assert(!!bootstrapConfig.name);
-        AnnotationFactory._bootstrapConfigs.set(bootstrapConfig.name, bootstrapConfig);
+    static addAnnotationsHook(annotationsHook: AnnotationsHook) {
+        assert(!!annotationsHook.name);
+        AnnotationFactory._hooks.set(annotationsHook.name, annotationsHook);
     }
     constructor(groupId: string) {
         this._groupId = groupId;
@@ -124,7 +124,7 @@ export class AnnotationFactory {
             annotationStub = function () {} as any;
         }
         if (!name) {
-            name = `anonymousAnnotation#${generatedId++}`;
+            name = `anonymousAnnotation#${anonymousAnnotationId++}`;
         }
         const _factory = this;
 
@@ -134,20 +134,21 @@ export class AnnotationFactory {
             groupId,
             annotationStub,
             function (...annotationArgs: any[]): Decorator {
-                return _factory._createBootstrapDecorator(annotation as any, annotationStub, annotationArgs);
+                return _factory._createDecorator(annotation as any, annotationStub, annotationArgs);
             },
         );
 
         return annotation;
     }
 
-    _createBootstrapDecorator<A extends AnnotationType, S extends Annotation<AnnotationType>>(
+    // Turn an annotation into an ES decorator
+    _createDecorator<A extends AnnotationType, S extends Annotation<AnnotationType>>(
         annotation: Annotation<A>,
         annotationStub: S,
         annotationArgs: any[],
     ): Decorator {
         return function (...targetArgs: any[]): Function | PropertyDescriptor | void {
-            return [...AnnotationFactory._bootstrapConfigs.values()]
+            return [...AnnotationFactory._hooks.values()]
                 .sort((c1, c2) => c1.order - c2.order)
                 .reduce((decoree, { name, decorator }) => {
                     try {

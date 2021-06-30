@@ -3,7 +3,7 @@ import { _AClass, _AMethod, _AParameter, _AProperty, _BClass, _BMethod, _BParame
 import { setupAspectTestingContext } from '@aspectjs/core/testing';
 import { Weaver } from '@aspectjs/weaver';
 import { AfterReturnContext } from './after-return.context';
-import { AdviceType, AfterContext, AdviceContext, AfterThrowContext, on } from '../../..';
+import { AdviceType, AfterContext, AdviceContext, AfterThrowContext, on } from '@aspectjs/core';
 
 describe('AfterReturnContext', () => {
     let weaver: Weaver;

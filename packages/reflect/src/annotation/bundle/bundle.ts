@@ -228,27 +228,6 @@ export class ClassAnnotationsBundle<T = unknown> extends RootAnnotationsBundle {
     }
 }
 
-// const b: RootAnnotationsBundle = undefined;
-//
-// const o = { attr: '', method() {} };
-// const l = AnnotationLocation.of(o);
-// b.at(AnnotationLocation.of(o)).all();
-//
-// b.at(AnnotationLocation.of(o).attr).all();
-// b.at(AnnotationLocation.of(o).attr).onProperty();
-// b.at(AnnotationLocation.of(o).attr).onMethod();
-// b.at(AnnotationLocation.of(o).attr).onParameter();
-//
-// b.at(AnnotationLocation.of(o).method).all();
-// b.at(AnnotationLocation.of(o).method).onProperty();
-// b.at(AnnotationLocation.of(o).method).onMethod();
-// b.at(AnnotationLocation.of(o).method).onParameter();
-//
-// b.at(AnnotationLocation.of(o).method.args).all();
-// b.at(AnnotationLocation.of(o).method.args).onProperty();
-// b.at(AnnotationLocation.of(o).method.args).onMethod();
-// b.at(AnnotationLocation.of(o).method.args).onParameter();
-
 type Filters = {
     [atLocation in AnnotationType]: {
         all(target: AnnotationTarget, a: AnnotationContext): boolean;

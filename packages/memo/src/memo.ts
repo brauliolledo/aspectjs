@@ -1,4 +1,4 @@
-import { WEAVER } from '@aspectjs/core';
+import { WEAVER } from '@aspectjs/weaver';
 import { MemoProfile, MemoProfileFeatures } from './profiles/default.profile';
 
 /**

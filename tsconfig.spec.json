@@ -1,16 +1,13 @@
 {
-  "$schema": "http://json.schemastore.org/tsconfig",
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "types": ["reflect-metadata", "jasmine", "node"],
-    "module": "commonjs",
-    "lib": [
-      "dom",
-      "ES2019.Array",
-      "ESNext"
-    ]
-  },
-  "include": [
-    "node_modules/@types/node/globals.d.ts"
-  ]
+    "$schema": "http://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "types": ["reflect-metadata", "jasmine", "node"],
+        "module": "commonjs",
+        "lib": ["dom", "ES2019.Array", "ESNext"],
+        "paths": {
+            "@root/testing": ["../testing/index.ts"]
+        }
+    },
+    "include": ["node_modules/@types/node/globals.d.ts"]
 }

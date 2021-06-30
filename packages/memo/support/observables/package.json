@@ -14,5 +14,8 @@
   },
   "files": [
     "register.js"
-  ]
+  ],
+  "peerDependencies": {
+    "@aspectjs/memo": "0.1.4"
+  }
 }

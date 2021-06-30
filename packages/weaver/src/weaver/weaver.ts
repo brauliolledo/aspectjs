@@ -36,7 +36,6 @@ export interface Weaver {
      * Get all registered aspects
      */
     getAspects(): AspectType[];
-    [Symbol.iterator](): Iterator<AspectType>;
 
     /**
      * iterate over all registered aspects

@@ -12,9 +12,9 @@ import {
     JoinPoint,
     BeforeAdvice,
 } from '@aspectjs/core';
-import { MutableAdviceContext } from 'weaver/src/mutable-advice.context.type';
-import { _CompiledSymbol, _WeavingStrategy } from 'weaver/src/weaver/weaving-strategy';
 import { _JoinpointFactory } from '../../joinpoint-factory';
+import { MutableAdviceContext } from '../../mutable-advice.context.type';
+import { _CompiledSymbol, _WeavingStrategy } from '../../weaver/weaving-strategy';
 
 /**
  * @internal
