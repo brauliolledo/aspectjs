@@ -294,7 +294,8 @@ describe('BeforeContext', () => {
                     prop: any = 'test';
                 }
 
-                new Test().prop;
+                const t = new Test();
+                t.prop;
                 expect(beforeAAdvice).toHaveBeenCalledTimes(1);
             });
         });

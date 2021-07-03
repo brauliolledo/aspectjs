@@ -26,8 +26,12 @@ export class _AdviceExecutionPlanFactory {
             }
             assert(!!compiledSymbol);
 
+            let withinAdviceSafeguard = false; // toggled to true before running joinpoint to avoid advice calling back itself
             // TODO remove this extra jp ?
             const bootstrapJp = function (...args: any[]): T {
+                if (withinAdviceSafeguard) {
+                    return hooks.initialJoinpoint.call(hooks, ctxt, compiledSymbol);
+                }
                 const restoreArgs = ctxt.args;
                 const restoreInstance = ctxt.instance;
                 ctxt.args = args;
@@ -80,6 +84,7 @@ export class _AdviceExecutionPlanFactory {
                             advicesReg[PointcutPhase.AFTERTHROW] as Advice<T, A, PointcutPhase.AFTERTHROW>[],
                         );
                     } finally {
+                        withinAdviceSafeguard = false;
                         delete ctxt.error;
                         hooks.preAfter?.call(hooks, ctxt);
                         hooks.after(
@@ -91,6 +96,7 @@ export class _AdviceExecutionPlanFactory {
                         ctxt.args = restoreArgs;
                     }
                 });
+                withinAdviceSafeguard = true;
 
                 hooks.preAround?.call(hooks, ctxt);
 
