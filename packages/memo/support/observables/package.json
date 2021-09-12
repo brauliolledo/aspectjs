@@ -1,6 +1,6 @@
 {
   "name": "@aspectjs/memo-observable-support",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "private": true,
   "main": "../../dist/bundles/observable-support.umd.js",
   "unpkg": "../../dist/bundles/observable-support.umd.min.js",
