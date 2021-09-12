@@ -1,0 +1,7 @@
+coverage
+node_modules
+tests
+.nycrc.json
+rollup.utils.{js,ts}
+*.tsbuildinfo
+tsconfig.*.json

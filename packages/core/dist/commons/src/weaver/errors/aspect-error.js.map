@@ -1,0 +1,1 @@
+{"version":3,"file":"aspect-error.js","sourceRoot":"","sources":["../../../../../commons/src/weaver/errors/aspect-error.ts"],"names":[],"mappings":"AAEA;;;GAGG;AACH,MAAM,OAAO,WAAY,SAAQ,KAAK;IAClC,YAAY,IAAmB,EAAE,OAAgB;QAC7C,KAAK,CAAC,yBAAyB,IAAI,CAAC,MAAM,OAAO,IAAI,CAAC,MAAM,CAAC,KAAK,KAAK,OAAO,EAAE,CAAC,CAAC;IACtF,CAAC;CACJ"}

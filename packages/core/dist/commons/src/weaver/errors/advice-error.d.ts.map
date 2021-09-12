@@ -1,0 +1,1 @@
+{"version":3,"file":"advice-error.d.ts","sourceRoot":"","sources":["../../../../../commons/src/weaver/errors/advice-error.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,eAAe,CAAC;AACvC,OAAO,EAAE,YAAY,EAAE,MAAM,iBAAiB,CAAC;AAE/C;;;GAGG;AACH,qBAAa,WAAY,SAAQ,YAAY;gBAC7B,MAAM,EAAE,MAAM,EAAE,OAAO,EAAE,MAAM;CAG9C"}

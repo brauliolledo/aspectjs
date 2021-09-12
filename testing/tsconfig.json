@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "exclude": [
+    "dist"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "public_api.ts"
+  ],
+  "references": [
+    { "path": "../" },
+    { "path": "../commons" }
+  ]
+}

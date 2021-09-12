@@ -1,0 +1,1 @@
+{"version":3,"file":"weaving-error.js","sources":["../../../../../../commons/src/weaver/errors/weaving-error.ts"],"sourcesContent":["/**\n * Error thrown during the weaving process meaning the weaver has illegal state.\n * @public\n */\nexport class WeavingError extends Error {}\n"],"names":[],"mappings":"AAAA;;;;MAIa,YAAa,SAAQ,KAAK;;;;;"}
