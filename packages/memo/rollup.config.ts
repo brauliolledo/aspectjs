@@ -8,7 +8,7 @@ const rollupOptions: RollupOptions[] = new RollupConfig([
 ])
     .withAll((config) => {
         for (let i = 0; i < config.plugins.length; ++i) {
-            if (config.plugins[i].name === 'node-resolve') {
+            if ((config.plugins[i] as any).name === 'node-resolve') {
                 config.plugins[i] = nodeResolve({
                     resolveOnly: [/^((?!rxjs\/?.*).)*$/], // all but rxjs
                 });

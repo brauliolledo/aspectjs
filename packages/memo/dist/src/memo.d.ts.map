@@ -1,0 +1,1 @@
+{"version":3,"file":"memo.d.ts","sourceRoot":"","sources":["../../src/memo.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,WAAW,EAAE,mBAAmB,EAAE,MAAM,4BAA4B,CAAC;AAE9E;;GAEG;AACH,cAAM,kBAAmB,SAAQ,WAAW;IACxC,QAAQ;IAIR,SAAS,CAAC,QAAQ,EAAE,mBAAmB,GAAG,kBAAkB;CAG/D;AAED;;GAEG;AACH,eAAO,MAAM,YAAY,oBAA2B,CAAC"}
